@@ -48,6 +48,7 @@ node server.js
    本家リポジトリ（オリジナル）の更新を追跡できるように、リモート名 `upstream` として登録します。
 ### 自分のフォークしたリポジトリをクローン（ユーザー名は自分のものに変更）
 git clone git@github.com:自分のユーザー名/schedule.git
+
 cd schedule
 ### 本家リポジトリを upstream という名前で登録
 git remote add upstream git@github.com:ValeriaTang/schedule.git
