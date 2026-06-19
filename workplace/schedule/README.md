@@ -61,6 +61,7 @@ git remote -v
 git fetch upstream
 ### 自分の main ブランチに本家の最新状態を強制同期
 git checkout main
+
 git reset --hard upstream/main
 
 ## 3. [作業用ブランチの作成]
