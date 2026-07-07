@@ -72,7 +72,8 @@ git checkout -b feature/ブランチ名
 ## 4. [変更の記録（コミット)]
    コードの追加や修正が終わったら、変更をステージングしてコミットします。
 ### 変更のあったファイルをステージング（※上層を巻き込まないようフォルダ指定を推奨）
-git add backend/ frontend/
+git add workplace/schedule/frontend/
+git add workplace/schedule/backend/ 
 ### 状態の確認（緑色の文字だけがコミットされます）
 git status
 ### コミットメッセージを書いて記録
