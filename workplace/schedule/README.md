@@ -49,7 +49,7 @@ node server.js
 ### 自分のフォークしたリポジトリをクローン（ユーザー名は自分のものに変更）
 git clone git@github.com:自分のユーザー名/schedule.git
 
-cd schedule
+cd workplace/schedule
 ### 本家リポジトリを upstream という名前で登録
 git remote add upstream git@github.com:ValeriaTang/schedule.git
 ### 登録されたか確認
@@ -73,6 +73,7 @@ git checkout -b feature/ブランチ名
    コードの追加や修正が終わったら、変更をステージングしてコミットします。
 ### 変更のあったファイルをステージング（※上層を巻き込まないようフォルダ指定を推奨）
 git add workplace/schedule/frontend/
+
 git add workplace/schedule/backend/ 
 ### 状態の確認（緑色の文字だけがコミットされます）
 git status
@@ -94,4 +95,5 @@ git push origin feature/ブランチ名
 
 ## 更新履歴
 
-* 2026/06/19: [README.md を更新]
+* 2026/07/07: [README.md を更新]
+*
