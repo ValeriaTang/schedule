@@ -96,4 +96,3 @@ git push origin feature/ブランチ名
 ## 更新履歴
 
 * 2026/07/07: [README.md を更新]
-*
