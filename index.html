@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Study Planner</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/style.css">
+
+    <!-- FullCalendar -->
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.18/index.global.min.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+    <!-- =========================
+            ヘッダー
+    ========================== -->
+
+    <header>
+
+        <div class="logo">
+
+            <h1>Study Planner</h1>
+
+        </div>
+
+        <div class="header-right">
+
+            <div id="clock"></div>
+
+            <button id="addTaskButton">
+
+                ＋ 課題追加
+
+            </button>
+
+        </div>
+
+    </header>
+    <!-- =========================
+        ダッシュボード
+    ========================= -->
+
+    <section class="dashboard">
+
+        <div class="dashboard-card">
+
+            <h3>課題数</h3>
+
+            <p id="taskCount">0</p>
+
+        </div>
+
+        <div class="dashboard-card">
+
+            <h3>今日の締切</h3>
+
+            <p id="todayTaskCount">0</p>
+
+        </div>
+
+        <div class="dashboard-card">
+
+            <h3>優先度：高</h3>
+
+            <p id="highPriorityCount">0</p>
+
+        </div>
+
+    </section>
+
+
+
+    <!-- =========================
+            メイン画面
+    ========================== -->
+
+    <div class="container">
+
+
+        <!-- サイドバー -->
+
+        <aside class="sidebar">
+
+            <button id="calendarTab">
+
+                📅 カレンダー
+
+            </button>
+
+            <button id="taskTab">
+
+                📝 課題一覧
+
+            </button>
+
+            <button id="notificationTab">
+
+                🔔 通知
+
+            </button>
+
+            <button id="shareTab">
+
+                👥 共有
+
+            </button>
+
+        </aside>
+
+
+
+        <!-- 中央 -->
+
+        <main>
+
+
+            <!-- カレンダー -->
+
+            <section class="calendar-section">
+
+                <div id="calendar"></div>
+
+            </section>
+
+
+
+            <!-- 課題一覧 -->
+
+            <section class="task-section">
+
+                <h2>課題一覧</h2>
+
+                <div id="taskList">
+
+                </div>
+
+            </section>
+
+        </main>
+
+
+
+        <!-- 右側 -->
+
+        <aside class="right-panel">
+
+            <h2>予定一覧</h2>
+
+            <div id="scheduleList">
+
+                日付をクリックすると予定が表示されます。
+
+            </div>
+
+        </aside>
+
+    </div>
+
+
+
+    <!-- =========================
+            課題追加画面
+    ========================== -->
+
+    <div id="taskModal">
+
+
+        <div class="modal-header">
+
+            <h2>課題追加</h2>
+
+            <button id="closeModal">
+
+                ×
+
+            </button>
+
+        </div>
+
+
+
+        <label>
+
+            課題名
+
+        </label>
+
+        <input
+            type="text"
+            id="taskTitle"
+            placeholder="課題名を入力">
+
+
+
+        <label>
+
+            提出期限
+
+        </label>
+
+        <input
+            type="date"
+            id="deadline">
+
+
+
+        <label>
+
+            課題をする日
+
+        </label>
+
+        <input
+            type="date"
+            id="studyDate">
+
+
+
+        <label>
+
+            必要時間（時間）
+
+        </label>
+
+        <input
+            type="number"
+            id="studyTime"
+            min="1"
+            max="24">
+
+
+
+        <label>
+
+            優先順位
+
+        </label>
+
+        <select id="priority">
+
+            <option value="高">高</option>
+
+            <option value="中">中</option>
+
+            <option value="低">低</option>
+
+        </select>
+
+
+
+        <button id="saveTask">
+
+            保存
+
+        </button>
+
+    </div>
+
+
+
+    <!-- JavaScript -->
+
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.18/index.global.min.js"></script>
+
+    <script src="js/calendar.js"></script>
+
+    <script src="js/task.js"></script>
+
+    <script src="js/sidebar.js"></script>
+
+    <script src="js/notification.js"></script>
+
+    <script src="js/share.js"></script>
+
+    <script src="js/main.js"></script>
+
+</body>
+
+</html>
