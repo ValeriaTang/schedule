@@ -20,7 +20,7 @@ app.post('/api/signup', async (req, res) => {
   const { name, email, password } = req.body;
 
   try {
-    // 【重要】入力された生のパスワードをArgon2でハッシュ化（解読不能に）する
+    // 入力された生のパスワードをArgon2でハッシュ化（解読不能に）する
     const hash = await argon2.hash(password);
 
     // Neonデータベースにユーザー情報を保存（パスワードはハッシュを保存）
@@ -61,7 +61,7 @@ app.post('/api/login', async (req, res) => {
 
     const user = userResult.rows[0];
 
-    // 2. 【重要】入力された生のパスワードと、Neonから持ってきたハッシュが一致するか検証する
+    // 2. 入力された生のパスワードと、Neonから持ってきたハッシュが一致するか検証する
     // argon2.verifyが自動で安全に計算・比較してくれます
     const isPasswordValid = await argon2.verify(user.password_hash, password);
 
