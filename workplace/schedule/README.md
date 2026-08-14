@@ -86,7 +86,7 @@ git push origin feature/ブランチ名
 ## (6)[プルリクエスト（Pull Request）の作成]
    自分のGitHubリポジトリ（フォーク側）のページを開きます。
   「Compare & pull request」ボタンが表示されているのでクリックします。
-   変更内容のタイトルと説明を書き、本家（`ValeriaTang/schedule`）の `main` ブランチに向けて「Create pull request」を送信します。
+   変更内容のタイトルと説明を書き、本家（`hackathon-SAI/schedule`）の `main` ブランチに向けて「Create pull request」を送信します。
    
 
 
