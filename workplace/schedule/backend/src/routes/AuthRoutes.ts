@@ -1,5 +1,5 @@
 import { Hono } from 'hono'
-import { AuthController } from '../controllers/AuthController.ts'
+import { AuthController } from '../controllers/AuthController'
 
 const authRoutes = new Hono()
 

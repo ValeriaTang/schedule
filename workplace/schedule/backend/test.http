@@ -1,0 +1,38 @@
+### 変数の設定（ベースURL）
+@baseUrl = http://0.0.0.0:5000
+
+### 1. ユーザー新規登録 (POST)
+POST {{baseUrl}}/api/auth/signup
+Content-Type: application/json
+
+{
+  "name": "テストユーザー",
+  "email": "test@example.com",
+  "password": "password123"
+}
+
+### 2. ログイン (POST)
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "password123"
+}
+
+### 3. 予定の新規作成 (POST)
+POST {{baseUrl}}/api/events
+Content-Type: application/json
+
+{
+  "title": "チームMTG",
+  "startDate": "2026-08-20T10:00:00",
+  "endDate": "2026-08-20T11:00:00"
+}
+
+### 4. 予定一覧の取得 (GET)
+GET {{baseUrl}}/api/events
+
+### 5. 予定の削除 (DELETE)
+# ※ :id の部分は実際の予定IDに書き換えてください
+DELETE {{baseUrl}}/api/events/1
