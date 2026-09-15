@@ -9,18 +9,22 @@ let calendar;
 // カレンダーイベント
 let events = [];
 
-// -------------------------------
+
+// =======================================
 // 初期化
-// -------------------------------
+// =======================================
+
 document.addEventListener("DOMContentLoaded", () => {
 
     initializeCalendar();
 
 });
 
-// -------------------------------
+
+// =======================================
 // カレンダー初期化
-// -------------------------------
+// =======================================
+
 function initializeCalendar() {
 
     const calendarEl = document.getElementById("calendar");
@@ -31,7 +35,7 @@ function initializeCalendar() {
 
         initialView: "dayGridMonth",
 
-        height: 650,
+        height: "auto",
 
         selectable: true,
 
@@ -63,6 +67,7 @@ function initializeCalendar() {
 
         events: events,
 
+
         // 日付クリック
         dateClick: function(info){
 
@@ -72,55 +77,84 @@ function initializeCalendar() {
 
     });
 
+
     calendar.render();
 
-    // 保存済み課題を読み込む
+
+    // 保存済みデータを読み込む
     updateCalendar();
 
 }
-// -------------------------------
+
+
+// =======================================
 // カレンダー更新
-// -------------------------------
+// =======================================
+
 function updateCalendar() {
 
-    // カレンダーがまだ生成されていない場合は終了
+    // カレンダーがまだ生成されていない場合
     if (!calendar) {
+
         return;
+
     }
 
-    // 一度すべての予定を削除
+
+    // 一度すべてのイベントを削除
+
     calendar.removeAllEvents();
 
-    // localStorageから課題を取得
-    const tasks = JSON.parse(localStorage.getItem("tasks")) || [];
 
-    // 1件ずつカレンダーへ追加
+    // ===================================
+    // 課題を取得
+    // ===================================
+
+    const tasks =
+        JSON.parse(localStorage.getItem("tasks")) || [];
+
+
+    // ===================================
+    // 課題をカレンダーに追加
+    // ===================================
+
     tasks.forEach(task => {
 
-        let color = "#4285F4"; // デフォルト（青）
+        let color = "#4285F4";
 
-        // 優先順位で色変更
+
+        // 優先順位で色を変更
+
         switch(task.priority){
 
             case "高":
-                color = "#E53935";   // 赤
+
+                color = "#E53935";
+
                 break;
+
 
             case "中":
-                color = "#FB8C00";   // オレンジ
+
+                color = "#FB8C00";
+
                 break;
 
+
             case "低":
-                color = "#43A047";   // 緑
+
+                color = "#43A047";
+
                 break;
 
         }
 
+
         calendar.addEvent({
 
-            id: task.id,
+            id: "task-" + task.id,
 
-            title: task.title,
+            title: "📝 " + task.title,
 
             start: task.deadline,
 
@@ -134,57 +168,220 @@ function updateCalendar() {
 
     });
 
+
+    // ===================================
+    // 予定を取得
+    // ===================================
+
+    const schedules =
+        JSON.parse(localStorage.getItem("schedules")) || [];
+
+
+    // ===================================
+    // 予定をカレンダーに追加
+    // ===================================
+
+    schedules.forEach(schedule => {
+
+        calendar.addEvent({
+
+            id: "schedule-" + schedule.id,
+
+            title: "📅 " + schedule.title,
+
+            start: schedule.date + "T" + schedule.startTime,
+
+            end: schedule.date + "T" + schedule.endTime,
+
+            allDay: false,
+
+            backgroundColor: "#6C63FF",
+
+            borderColor: "#6C63FF"
+
+        });
+
+    });
+
 }
-// -------------------------------
-// 指定日の予定一覧表示
-// -------------------------------
+
+
+// =======================================
+// 指定日の課題＋予定を表示
+// =======================================
+
 function showSchedule(date) {
 
-    const scheduleList = document.getElementById("scheduleList");
+    const scheduleList =
+        document.getElementById("scheduleList");
 
-    // localStorageから課題を取得
-    const tasks = JSON.parse(localStorage.getItem("tasks")) || [];
 
-    // 指定日の課題だけ抽出
-    const dayTasks = tasks.filter(task => task.deadline === date);
+    // ===================================
+    // 課題を取得
+    // ===================================
 
-    // 一度消す
+    const tasks =
+        JSON.parse(localStorage.getItem("tasks")) || [];
+
+
+    // 指定日の課題
+
+    const dayTasks =
+        tasks.filter(task => task.deadline === date);
+
+
+    // ===================================
+    // 予定を取得
+    // ===================================
+
+    const schedules =
+        JSON.parse(localStorage.getItem("schedules")) || [];
+
+
+    // 指定日の予定
+
+    const daySchedules =
+        schedules.filter(schedule => schedule.date === date);
+
+
+    // ===================================
+    // 一度画面を消す
+    // ===================================
+
     scheduleList.innerHTML = "";
 
-    // タイトル
-    const title = document.createElement("h3");
+
+    // ===================================
+    // 日付
+    // ===================================
+
+    const title =
+        document.createElement("h3");
+
     title.textContent = date;
+
     scheduleList.appendChild(title);
 
+
+    // ===================================
+    // 課題
+    // ===================================
+
+    const taskTitle =
+        document.createElement("h3");
+
+    taskTitle.textContent = "📝 課題";
+
+    scheduleList.appendChild(taskTitle);
+
+
     // 課題がない場合
+
     if(dayTasks.length === 0){
 
-        const p = document.createElement("p");
-        p.textContent = "予定はありません。";
-        scheduleList.appendChild(p);
+        const p =
+            document.createElement("p");
 
-        return;
+        p.textContent = "この日の課題はありません。";
+
+        scheduleList.appendChild(p);
 
     }
 
-    // 課題表示
+
+    // 課題を表示
+
     dayTasks.forEach(task => {
 
-        const div = document.createElement("div");
+        const div =
+            document.createElement("div");
 
         div.className = "task-card";
 
+
         div.innerHTML = `
 
-            <h3>${task.title}</h3>
+            <h3>${escapeHtml(task.title)}</h3>
 
-            <p>⭐ 優先順位：${task.priority}</p>
+            <p>⭐ 優先順位：${escapeHtml(task.priority)}</p>
 
-            <p>📝 課題をする日：${task.studyDate || "未設定"}</p>
+            <p>
+                📝 課題をする日：
+                ${escapeHtml(task.studyDate || "未設定")}
+            </p>
 
-            <p>⏰ 必要時間：${task.studyTime || 0}時間</p>
+            <p>
+                ⏰ 必要時間：
+                ${escapeHtml(String(task.studyTime || 0))}時間
+            </p>
 
         `;
+
+
+        scheduleList.appendChild(div);
+
+    });
+
+
+    // ===================================
+    // 予定
+    // ===================================
+
+    const scheduleTitle =
+        document.createElement("h3");
+
+    scheduleTitle.textContent = "📅 予定";
+
+    scheduleList.appendChild(scheduleTitle);
+
+
+    // 予定がない場合
+
+    if(daySchedules.length === 0){
+
+        const p =
+            document.createElement("p");
+
+        p.textContent = "この日の予定はありません。";
+
+        scheduleList.appendChild(p);
+
+    }
+
+
+    // 予定を表示
+
+    daySchedules.forEach(schedule => {
+
+        const div =
+            document.createElement("div");
+
+        div.className = "schedule-card";
+
+
+        div.innerHTML = `
+
+            <h3>
+                ${escapeHtml(schedule.title)}
+            </h3>
+
+            <p>
+                🕐 ${escapeHtml(schedule.startTime)}
+                ～ ${escapeHtml(schedule.endTime)}
+            </p>
+
+            ${
+                schedule.memo
+                ?
+                `<p>
+                    📝 ${escapeHtml(schedule.memo)}
+                </p>`
+                :
+                ""
+            }
+
+        `;
+
 
         scheduleList.appendChild(div);
 
@@ -192,16 +389,36 @@ function showSchedule(date) {
 
 }
 
-// -------------------------------
+
+// =======================================
+// HTMLエスケープ
+// =======================================
+
+function escapeHtml(text){
+
+    const div =
+        document.createElement("div");
+
+    div.textContent = text;
+
+    return div.innerHTML;
+
+}
+
+
+// =======================================
 // 外部から呼び出す更新関数
-// -------------------------------
-function refreshCalendar() {
+// =======================================
+
+function refreshCalendar(){
 
     updateCalendar();
 
 }
 
-// -------------------------------
+
+// =======================================
 // デバッグ
-// -------------------------------
+// =======================================
+
 console.log("calendar.js 読み込み完了");
