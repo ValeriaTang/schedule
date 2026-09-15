@@ -83,14 +83,8 @@ header{
 
 .container{
     display:grid;
-
-    grid-template-columns:
-        clamp(180px, 15vw, 280px)
-        minmax(0, 1fr)
-        clamp(260px, 22vw, 400px);
-
+    grid-template-columns:1fr;
     gap:clamp(15px, 2vw, 30px);
-
     padding:clamp(15px, 2vw, 30px);
 }
 
@@ -359,10 +353,6 @@ header{
 
     .logo h1{
         font-size:22px;
-    }
-
-    .dashboard{
-        flex-direction:column;
     }
 
     #calendar{
@@ -740,6 +730,254 @@ header{
 
         font-size:14px;
 
+    }
+
+}
+
+/* ===================================
+   新しいメニュー
+=================================== */
+
+#menuButton{
+    border:none;
+    background:none;
+    font-size:28px;
+    cursor:pointer;
+    color:#333;
+    padding:5px 10px;
+}
+
+#menuButton:hover{
+    color:#6C63FF;
+}
+
+
+/* ===================================
+   ヘッダー
+=================================== */
+
+header{
+    gap:15px;
+}
+
+.logo{
+    flex:1;
+}
+
+
+/* ===================================
+   メニュー表示
+=================================== */
+
+#menuPanel{
+    position:fixed;
+
+    top:75px;
+    left:15px;
+
+    width:230px;
+
+    background:white;
+
+    padding:15px;
+
+    border-radius:15px;
+
+    box-shadow:0 5px 20px rgba(0,0,0,.2);
+
+    z-index:2000;
+
+    display:none;
+}
+
+#menuPanel.active{
+    display:flex;
+
+    flex-direction:column;
+
+    gap:10px;
+}
+
+
+#menuPanel button{
+    width:100%;
+
+    padding:15px;
+
+    border:none;
+
+    border-radius:10px;
+
+    background:#EEF0FF;
+
+    cursor:pointer;
+
+    font-size:16px;
+
+    text-align:left;
+}
+
+#menuPanel button:hover{
+    background:#6C63FF;
+
+    color:white;
+}
+
+
+/* ===================================
+   一覧パネル
+=================================== */
+
+.overlay-panel{
+
+    position:fixed;
+
+    top:0;
+    left:0;
+
+    width:100%;
+    height:100vh;
+
+    background:white;
+
+    z-index:1500;
+
+    padding:clamp(20px, 3vw, 40px);
+
+    overflow:auto;
+
+    display:none;
+}
+
+
+.overlay-panel.active{
+    display:block;
+}
+
+
+/* ===================================
+   パネルヘッダー
+=================================== */
+
+.panel-header{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    margin-bottom:25px;
+
+    border-bottom:1px solid #ddd;
+
+    padding-bottom:15px;
+}
+
+
+.panel-header h2{
+    color:#6C63FF;
+}
+
+
+.closePanel{
+
+    border:none;
+
+    background:none;
+
+    font-size:35px;
+
+    cursor:pointer;
+
+    color:#555;
+
+    width:45px;
+    height:45px;
+
+    border-radius:10px;
+}
+
+
+.closePanel:hover{
+
+    background:#f0f0f0;
+
+    color:#E53935;
+}
+
+
+/* ===================================
+   パネル内のカード
+=================================== */
+
+.overlay-panel .task-card,
+.overlay-panel .schedule-card{
+
+    max-width:800px;
+
+    margin:0 auto 15px auto;
+}
+
+
+/* ===================================
+   スマホ
+=================================== */
+
+@media screen and (max-width:900px){
+
+    #menuButton{
+        font-size:24px;
+    }
+
+    #menuPanel{
+
+        top:65px;
+        left:10px;
+
+        width:220px;
+    }
+
+    .header-right{
+        gap:8px;
+    }
+
+    #addTaskButton,
+    #addScheduleButton{
+
+        padding:8px 12px;
+
+        font-size:13px;
+    }
+
+}
+
+/* ===================================
+   ダッシュボード スマホ対応
+=================================== */
+
+@media screen and (max-width:900px){
+
+    .dashboard{
+        display:grid;
+        grid-template-columns:repeat(3, 1fr);
+        gap:8px;
+        margin:10px;
+    }
+
+    .dashboard-card{
+        padding:12px 5px;
+        border-radius:12px;
+    }
+
+    .dashboard-card h3{
+        font-size:12px;
+        margin-bottom:5px;
+        white-space:nowrap;
+    }
+
+    .dashboard-card p{
+        font-size:24px;
     }
 
 }
