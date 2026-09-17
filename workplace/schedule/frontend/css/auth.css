@@ -1,0 +1,230 @@
+/* ===================================
+   ログイン・新規登録
+=================================== */
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+
+    font-family:
+        "Yu Gothic",
+        "Meiryo",
+        sans-serif;
+
+    background:#f5f6fa;
+
+    color:#333;
+
+}
+
+
+/* ===================================
+   中央配置
+=================================== */
+
+.auth-container{
+
+    min-height:100vh;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    padding:20px;
+
+}
+
+
+/* ===================================
+   ボックス
+=================================== */
+
+.auth-box{
+
+    width:100%;
+
+    max-width:450px;
+
+    background:white;
+
+    padding:40px;
+
+    border-radius:20px;
+
+    box-shadow:
+        0 5px 20px
+        rgba(0,0,0,.1);
+
+}
+
+
+.auth-box h1{
+
+    text-align:center;
+
+    color:#6C63FF;
+
+    margin-bottom:10px;
+
+    font-size:32px;
+
+}
+
+
+.auth-box h2{
+
+    text-align:center;
+
+    margin-bottom:30px;
+
+}
+
+
+/* ===================================
+   入力
+=================================== */
+
+.auth-box label{
+
+    display:block;
+
+    margin-top:15px;
+
+    margin-bottom:7px;
+
+    font-weight:bold;
+
+}
+
+
+.auth-box input{
+
+    width:100%;
+
+    padding:13px;
+
+    border:1px solid #ccc;
+
+    border-radius:10px;
+
+    font-size:16px;
+
+}
+
+
+.auth-box input:focus{
+
+    outline:none;
+
+    border-color:#6C63FF;
+
+}
+
+
+/* ===================================
+   ボタン
+=================================== */
+
+.auth-box button{
+
+    width:100%;
+
+    margin-top:25px;
+
+    padding:14px;
+
+    border:none;
+
+    border-radius:10px;
+
+    background:#6C63FF;
+
+    color:white;
+
+    font-size:16px;
+
+    cursor:pointer;
+
+}
+
+
+.auth-box button:hover{
+
+    background:#574fd6;
+
+}
+
+
+/* ===================================
+   ページ切り替え
+=================================== */
+
+.switch-page{
+
+    text-align:center;
+
+    margin-top:20px;
+
+    font-size:14px;
+
+}
+
+
+.switch-page a{
+
+    color:#6C63FF;
+
+    text-decoration:none;
+
+    font-weight:bold;
+
+}
+
+
+.switch-page a:hover{
+
+    text-decoration:underline;
+
+}
+
+
+/* ===================================
+   エラー
+=================================== */
+
+.error-message{
+
+    color:#E53935;
+
+    margin-top:10px;
+
+    font-size:14px;
+
+}
+
+
+/* ===================================
+   スマホ
+=================================== */
+
+@media screen and (max-width:500px){
+
+    .auth-box{
+
+        padding:25px;
+
+    }
+
+    .auth-box h1{
+
+        font-size:26px;
+
+    }
+
+}
