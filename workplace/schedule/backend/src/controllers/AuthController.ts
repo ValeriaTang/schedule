@@ -16,11 +16,13 @@ export const AuthController = {
       const hash = await argon2.hash(password)
 
       // Neonデータベースに保存
-      const newUser = await UserModel.create(name, email, hash)
+      const newUser = await UserModel.create( name, email, hash)
 
       return c.json({
         message: 'ユーザー登録が完了しました',
-        user: newUser
+        id: newUser.id,
+        name: newUser.name,
+        email: newUser.email
       }, 201)
 
     } catch (err: any) {
