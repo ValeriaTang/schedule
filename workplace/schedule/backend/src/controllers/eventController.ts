@@ -22,7 +22,7 @@ export const EventController = {
         return c.json({ error: 'タイトルと開始時間を入力してください' }, 400)
       }
 
-      const newEvent = await EventModel.create(title, startTime, endTime)
+      const newEvent = await EventModel.create(title, startTime, endTime, 1)
       return c.json(newEvent, 201)
     } catch (error) {
       console.error(error)
