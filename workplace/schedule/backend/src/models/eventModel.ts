@@ -7,10 +7,10 @@ export const EventModel = {
   },
 
   // 新規予定の作成
-  async create(title: string, startTime: string, endTime: string) {
+  async create(title: string, startTime: string, endTime: string, userId: number) {
     const result = await sql`
-      INSERT INTO events (title, start_time, end_time)
-      VALUES (${title}, ${startTime}, ${endTime})
+      INSERT INTO events (title, start_time, end_time, created_by)
+      VALUES (${title}, ${startTime}, ${endTime}, ${userId})
       RETURNING *
     `
     return result[0]
