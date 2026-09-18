@@ -16,13 +16,13 @@ export const EventController = {
   // 作成処理
   async createEvent(c: Context) {
     try {
-      const { title, startTime, endTime } = await c.req.json()
+      const { title, startTime, endTime, userId } = await c.req.json()
 
       if (!title || !startTime) {
         return c.json({ error: 'タイトルと開始時間を入力してください' }, 400)
       }
 
-      const newEvent = await EventModel.create(title, startTime, endTime, 1)
+      const newEvent = await EventModel.create(title, startTime, endTime, userId)
       return c.json(newEvent, 201)
     } catch (error) {
       console.error(error)
