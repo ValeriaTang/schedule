@@ -72,11 +72,11 @@ git checkout -b feature/ブランチ名
 ### 変更のあったファイルをステージング（※上層を巻き込まないようフォルダ指定を推奨）
 git add workplace/schedule/frontend/
 
-git add workplace/schedule/backend/ 
+git add workplace/schedule/backend/
 ### 状態の確認（緑色の文字だけがコミットされます）
 git status
 ### コミットメッセージを書いて記録
-git commit -m "feat: ○○機能を追加"   
+git commit -m "feat: ○○機能を追加"
 
 ## (5)[自分のフォーク（GitHub）へプッシュ]
    コミットした内容を、自分のGitHub上のフォークリポジトリにアップロードします。
@@ -87,10 +87,6 @@ git push origin feature/ブランチ名
    自分のGitHubリポジトリ（フォーク側）のページを開きます。
   「Compare & pull request」ボタンが表示されているのでクリックします。
    変更内容のタイトルと説明を書き、本家（`hackathon-SAI/schedule`）の `main` ブランチに向けて「Create pull request」を送信します。
-   
-
-
 
 ## 更新履歴
-
 * 2026/07/07: [README.md を更新]
