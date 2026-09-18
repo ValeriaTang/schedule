@@ -3,8 +3,8 @@ import { sql } from '../config/db'
 export const TmpUserModel = {
   // 仮登録の作成（トークンと有効期限を保持）
   async create(name: string, email: string, passwordHash: string, token: string) {
-    // 有効期限を現在時刻から24時間後に設定
-    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+    const expiresAt = new Date(Date.now() + 30 * 60 * 1000).toISOString()
+    await sql`DELETE FROM tmp_users WHERE expires_at < NOW()`
 
     const result = await sql`
       INSERT INTO tmp_users (name, email, password_hash, token, expires_at)

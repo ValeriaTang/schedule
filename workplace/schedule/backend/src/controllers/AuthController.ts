@@ -1,8 +1,12 @@
 import { Context } from 'hono'
 import argon2 from 'argon2'
+import { sql } from '../config/db'
+import { Resend } from 'resend'
 import { UserModel } from '../models/userModel'
 import { TmpUserModel } from '../models/tmpUserModel'
 import crypto from 'crypto'
+
+const resend = new Resend(process.env.RESEND_API_KEY)
 
 export const AuthController = {
   // 1. ユーザー登録 (POST /api/auth/signup)
@@ -23,9 +27,14 @@ export const AuthController = {
       const token = crypto.randomUUID()
       await TmpUserModel.create(name, email, hash, token)
       const verifyUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/verify?token=${token}`
-      console.log(`[メール送信シミュレーション] 認証用URL: ${verifyUrl}`)
+      await resend.emails.send({
+        from: 'onboarding@resend.dev', // 本番は独自ドメインに設定
+        to: email,
+        subject: 'アカウント認証のお願い',
+        html: `<p>${name}様</p><p>以下のリンクをクリックして30分以内に本登録を完了してください。</p><a href="${verifyUrl}">${verifyUrl}</a>`
+      })
 
-      return c.json({ message: '確認メールを送信しました。メール内のリンクから本登録を完了してください。' }, 200)
+      return c.json({ message: '確認メールを送信しました。30分以内に認証を完了してください。' }, 200)
     } catch (err) {
       console.error(err)
       return c.json({ error: '仮登録処理に失敗しました' }, 500)
@@ -36,7 +45,6 @@ export const AuthController = {
   async verify(c: Context) {
     try {
       const token = c.req.query('token')
-
       if (!token) {
         return c.json({ error: 'トークンが指定されていません' }, 400)
       }
@@ -46,12 +54,20 @@ export const AuthController = {
         return c.json({ error: '無効なトークンです' }, 400)
       }
 
-      const newUser = await UserModel.create(tmpUser.name, tmpUser.email, tmpUser.password_hash)
+      let newUser
+      const [inserted] = await sql.transaction((tx) => [
+        tx`
+          INSERT INTO users (name, email, password_hash)
+          VALUES (${tmpUser.name}, ${tmpUser.email}, ${tmpUser.password_hash})
+          RETURNING id, name, email
+        `,
+        tx`
+          DELETE FROM tmp_users WHERE id = ${tmpUser.id}
+        `
+        ])
+        newUser = inserted[0]
 
-      // 仮登録を削除
-      await TmpUserModel.delete(tmpUser.id)
-
-      return c.json({ message: '本登録が完了しました！ログインしてください。', user: newUser }, 201)
+      return c.json({ message: '本登録が完了しました！', user: newUser }, 201)
     } catch (err) {
       console.error(err)
       return c.json({ error: '本登録処理に失敗しました' }, 500)
