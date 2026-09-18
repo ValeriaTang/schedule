@@ -25,21 +25,24 @@
     ========================== -->
 
     <header>
-
+    
+        <!-- メニューボタン -->
+        <button id="menuButton">☰</button>
+    
         <div class="logo">
-
             <h1>Study Planner</h1>
-
         </div>
-
+    
         <div class="header-right">
-
+    
             <div id="clock"></div>
-
+    
             <button id="addTaskButton">
-
                 ＋ 課題追加
-
+            </button>
+    
+            <button id="addScheduleButton">
+                ＋ 予定追加
             </button>
 
         </div>
@@ -77,6 +80,67 @@
 
     </section>
 
+    <!-- =========================
+        メニュー
+    ========================= -->
+
+    <div id="menuPanel">
+
+        <button id="calendarMenuButton">
+            📅 カレンダー
+        </button>
+    
+        <button id="taskMenuButton">
+            📝 課題一覧
+        </button>
+    
+        <button id="scheduleMenuButton">
+            📅 予定一覧
+        </button>
+    
+    </div>
+
+    <!-- =========================
+        課題一覧パネル
+    ========================= -->
+
+    <div id="taskPanel" class="overlay-panel">
+
+        <div class="panel-header">
+
+            <h2>📝 課題一覧</h2>
+
+            <button class="closePanel" data-panel="taskPanel">
+                ×
+            </button>
+
+        </div>
+
+        <div id="taskList"></div>
+
+    </div>
+
+    <!-- =========================
+        予定一覧パネル
+    ========================= -->
+
+    <div id="schedulePanel" class="overlay-panel">
+
+        <div class="panel-header">
+
+            <h2>📅 予定一覧</h2>
+
+            <button class="closePanel" data-panel="schedulePanel">
+                ×
+            </button>
+
+        </div>
+
+        <div id="scheduleList">
+            予定がありません。
+        </div>
+
+    </div>
 
 
     <!-- =========================
@@ -85,87 +149,16 @@
 
     <div class="container">
 
-
-        <!-- サイドバー -->
-
-        <aside class="sidebar">
-
-            <button id="calendarTab">
-
-                📅 カレンダー
-
-            </button>
-
-            <button id="taskTab">
-
-                📝 課題一覧
-
-            </button>
-
-            <button id="notificationTab">
-
-                🔔 通知
-
-            </button>
-
-            <button id="shareTab">
-
-                👥 共有
-
-            </button>
-
-        </aside>
-
-
-
-        <!-- 中央 -->
-
         <main>
 
-
-            <!-- カレンダー -->
-
+            <!-- ホーム画面 -->
             <section class="calendar-section">
-
                 <div id="calendar"></div>
-
-            </section>
-
-
-
-            <!-- 課題一覧 -->
-
-            <section class="task-section">
-
-                <h2>課題一覧</h2>
-
-                <div id="taskList">
-
-                </div>
-
             </section>
 
         </main>
 
-
-
-        <!-- 右側 -->
-
-        <aside class="right-panel">
-
-            <h2>予定一覧</h2>
-
-            <div id="scheduleList">
-
-                日付をクリックすると予定が表示されます。
-
-            </div>
-
-        </aside>
-
     </div>
-
-
 
     <!-- =========================
             課題追加画面
@@ -265,6 +258,89 @@
 
     </div>
 
+    <!-- =========================
+            予定追加画面
+    ========================== -->
+
+    <div id="scheduleModal">
+
+        <div class="modal-header">
+
+            <h2>予定追加</h2>
+
+            <button id="closeScheduleModal">
+
+                ×
+
+            </button>
+
+        </div>
+
+
+        <label>
+
+            予定名
+
+        </label>
+
+        <input
+            type="text"
+            id="scheduleTitle"
+            placeholder="予定名を入力">
+
+
+        <label>
+
+            予定の日
+
+        </label>
+
+        <input
+            type="date"
+            id="scheduleDate">
+
+
+        <label>
+
+            開始時間
+
+        </label>
+
+        <input
+            type="time"
+            id="scheduleStartTime">
+
+
+        <label>
+
+            終了時間
+
+        </label>
+
+        <input
+            type="time"
+            id="scheduleEndTime">
+
+
+        <label>
+
+            メモ
+
+        </label>
+
+        <textarea
+            id="scheduleMemo"
+            placeholder="メモを入力"></textarea>
+
+
+        <button id="saveSchedule">
+
+            保存
+
+        </button>
+
+    </div>
+
 
 
     <!-- JavaScript -->
@@ -275,11 +351,15 @@
 
     <script src="js/task.js"></script>
 
+    <script src="js/schedule.js"></script>
+
     <script src="js/sidebar.js"></script>
 
     <script src="js/notification.js"></script>
 
     <script src="js/share.js"></script>
+
+    <script src="js/menu.js"></script>
 
     <script src="js/main.js"></script>
 
