@@ -3,7 +3,14 @@ import { Next } from 'hono'
 import { getCookie } from 'hono/cookie'
 import { verify } from 'hono/jwt'
 
-const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret'
+const getJwtSecret = (): string => {
+  const secret = process.env.JWT_SECRET
+  if (!secret) {
+    throw new Error('FATAL: JWT_SECRET environment variable is not set.')
+  }
+  return secret
+}
+
 
 export const authCheck = async (c: AppContext, next: Next) => {
   try {
@@ -14,7 +21,7 @@ export const authCheck = async (c: AppContext, next: Next) => {
     }
 
     // JWT の検証 (HS256)
-    const payload = await verify(token, JWT_SECRET, 'HS256')
+    const payload = await verify(token, getJwtSecret(), 'HS256')
     c.set('jwtPayload', payload as Env['Variables']['jwtPayload'])
     await next()
   } catch (error) {

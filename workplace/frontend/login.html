@@ -1,85 +1,47 @@
 <!DOCTYPE html>
 <html lang="ja">
-
 <head>
-
-    <meta charset="UTF-8">
-
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
-
-    <title>Study Planner - ログイン</title>
-
-    <link rel="stylesheet"
-          href="css/auth.css">
-
+  <meta charset="UTF-8">
+  <title>ログイン - Schedule App</title>
+  <!-- Google Sign-In SDK の読み込み -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
-
 <body>
+  <h2>Schedule App にログイン</h2>
 
-    <div class="auth-container">
+  <!-- Google ログインボタン表示用要素 -->
+  <div id="g_id_onload"
+       data-client_id="1067955587484-jiuifljib05r35bfj25orgjucl2ctjbe.apps.googleusercontent.com"
+       data-callback="handleCredentialResponse">
+  </div>
+  <div class="g_id_signin" data-type="standard"></div>
 
-        <div class="auth-box">
+  <script>
+    // Googleログイン完了時に実行される関数
+    async function handleCredentialResponse(response) {
+      // response.credential に Google の ID トークンが入っています
+      try {
+        const res = await fetch('/api/auth/google', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include', // HttpOnly Cookie を受け取るため必須
+          body: JSON.stringify({ credential: response.credential }),
+        });
 
-            <h1>Study Planner</h1>
+        const data = await res.json();
 
-            <h2>ログイン</h2>
-
-            <form id="loginForm">
-
-                <label for="loginEmail">
-                    メールアドレス
-                </label>
-
-                <input
-                    type="email"
-                    id="loginEmail"
-                    placeholder="メールアドレス"
-                    required
-                >
-
-
-                <label for="loginPassword">
-                    パスワード
-                </label>
-
-                <input
-                    type="password"
-                    id="loginPassword"
-                    placeholder="パスワード"
-                    required
-                >
-
-
-                <p id="loginError"
-                   class="error-message">
-                </p>
-
-
-                <button type="submit">
-                    ログイン
-                </button>
-
-            </form>
-
-
-            <p class="switch-page">
-
-                アカウントを持っていませんか？
-
-                <a href="register.html">
-                    新規登録はこちら
-                </a>
-
-            </p>
-
-        </div>
-
-    </div>
-
-
-    <script src="js/auth.js"></script>
-
+        if (res.ok) {
+          alert('ログインに成功しました！');
+          window.location.href = '/'; // メイン画面へ遷移
+        } else {
+          alert(data.error || 'ログインに失敗しました');
+        }
+      } catch (err) {
+        console.error('通信エラー:', err);
+      }
+    }
+  </script>
 </body>
-
 </html>
