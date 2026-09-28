@@ -3,84 +3,99 @@
 // アプリ全体の管理
 // =======================================
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
+  console.log("Study Planner 起動");
 
-    console.log("Study Planner 起動");
+  // ログイン確認（共通認証関数の実行）
+  if (typeof requireAuth === "function") {
+    const user = await requireAuth();
+    if (!user) return; // 未ログインなら requireAuth 内で login.html にリダイレクト
+  }
 
-    initializeApp();
-
+  initializeApp();
 });
-
 
 // ---------------------------------------
 // アプリ初期化
 // ---------------------------------------
-function initializeApp(){
+function initializeApp() {
+  console.log("初期化完了");
 
-    console.log("初期化完了");
+  updateClock();
 
-    updateClock();
+  // 1秒ごとに現在時刻を更新
+  setInterval(updateClock, 1000);
 
-    // 1秒ごとに現在時刻を更新
-    setInterval(updateClock,1000);
-
-    updateDashboard();
-
+  // ダッシュボード更新 (APIからデータ取得)
+  updateDashboard();
 }
 
 // ---------------------------------------
-// 現在時刻表示
+// 現在時刻表示 (※ロジックはそのまま問題ありません)
 // ---------------------------------------
-function updateClock(){
+function updateClock() {
+  const now = new Date();
 
-    const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  const hour = String(now.getHours()).padStart(2, "0");
+  const minute = String(now.getMinutes()).padStart(2, "0");
+  const second = String(now.getSeconds()).padStart(2, "0");
 
-    const year = now.getFullYear();
+  const text = `${year}/${month}/${day} ${hour}:${minute}:${second}`;
 
-    const month = String(now.getMonth()+1).padStart(2,"0");
+  const clock = document.getElementById("clock");
+  if (clock) {
+    clock.textContent = text;
+  }
+}
 
-    const day = String(now.getDate()).padStart(2,"0");
+// -------------------------------
+// ダッシュボード更新 (API連携版)
+// -------------------------------
+async function updateDashboard() {
+  try {
+    // 1. バックエンド API からイベント一覧を取得
+    const res = await fetch("/api/events", {
+      method: "GET",
+      credentials: "include", // HttpOnly Cookie を自動送信
+    });
 
-    const hour = String(now.getHours()).padStart(2,"0");
-
-    const minute = String(now.getMinutes()).padStart(2,"0");
-
-    const second = String(now.getSeconds()).padStart(2,"0");
-
-    const text =
-    `${year}/${month}/${day}
-     ${hour}:${minute}:${second}`;
-
-    const clock = document.getElementById("clock");
-
-    if(clock){
-
-        clock.textContent = text;
-
+    if (!res.ok) {
+      console.error("ダッシュボードデータの取得に失敗しました");
+      return;
     }
 
-}
-// -------------------------------
-// ダッシュボード更新
-// -------------------------------
-function updateDashboard(){
+    const tasks = await res.json();
 
-    const tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+    // 2. 全登録数
+    const taskCountEl = document.getElementById("taskCount");
+    if (taskCountEl) taskCountEl.textContent = tasks.length;
 
-    // 登録課題数
-    document.getElementById("taskCount").textContent = tasks.length;
-
-    // 今日の日付
+    // 3. 今日締切の計算 (日付フォーマット YYYY-MM-DD を抽出)
     const today = new Date().toISOString().split("T")[0];
 
-    // 今日締切
-    const todayTasks = tasks.filter(task => task.deadline === today);
+    const todayTasks = tasks.filter((task) => {
+      if (!task.end_time) return false;
+      // DB側の end_time (ISO文字列) から年月日(YYYY-MM-DD)部分を取り出して比較
+      const taskDeadlineDate = new Date(task.end_time).toISOString().split("T")[0];
+      return taskDeadlineDate === today;
+    });
 
-    document.getElementById("todayTaskCount").textContent = todayTasks.length;
+    const todayTaskCountEl = document.getElementById("todayTaskCount");
+    if (todayTaskCountEl) todayTaskCountEl.textContent = todayTasks.length;
 
-    // 優先度：高
-    const highPriority = tasks.filter(task => task.priority === "高");
+    // 4. 優先度：高 のカウント
+    // ※ DBのイベントテーブルに priority または description 等で判定する場合の処理
+    const highPriority = tasks.filter(
+      (task) => task.priority === "高" || (task.description && task.description.includes("優先度:高"))
+    );
 
-    document.getElementById("highPriorityCount").textContent = highPriority.length;
+    const highPriorityCountEl = document.getElementById("highPriorityCount");
+    if (highPriorityCountEl) highPriorityCountEl.textContent = highPriority.length;
 
+  } catch (err) {
+    console.error("通信エラー:", err);
+  }
 }
