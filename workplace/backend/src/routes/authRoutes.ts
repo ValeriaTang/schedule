@@ -1,6 +1,6 @@
 import { Hono } from 'hono'
 import { Env } from '../types/hono'
-import { AuthController } from '../controllers/AuthController'
+import { AuthController } from '../controllers/authController'
 import { authCheck } from '../middleware/authMiddleware'
 import { signupSchema, loginSchema } from '../validators/authValidators'
 

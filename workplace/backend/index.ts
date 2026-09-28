@@ -17,9 +17,7 @@ app.use('*', secureHeaders())
 app.use(
   '/api/*',
   cors({
-    origin: process.env.FRONTEND_URL || 'https://schedule-eight-eta.vercel.app',
-    allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowHeaders: ['Content-Type', 'Authorization'],
+    origin: (origin) => origin || '*', // または https://schedule-eight-eta.vercel.app
     credentials: true,
   })
 )

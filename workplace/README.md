@@ -9,14 +9,14 @@
 
 ## [プロジェクトの依存関係をインストールするコマンド]
 ### frontend フォルダに移動
-cd frontend
+cd frontend/
 ### パッケージをインストール
 npm install
 ### 終わったら親フォルダに戻る
 cd ..
 
 ### backend フォルダに移動
-cd backend
+cd backend/
 ### パッケージをインストール
 npm install
 ### 終わったら一度、親フォルダに戻る
@@ -28,12 +28,12 @@ cd ..
 
 ## [プロジェクトを実行するコマンド]
 ### frontend フォルダに移動
-cd frontend
+cd frontend/
 ### 開発サーバーを起動
 npm run dev
 
 ### backend フォルダに移動
-cd backend
+cd backend/
 ### サーバーを起動
 node server.js
 
@@ -47,7 +47,7 @@ node server.js
 ### 自分のフォークしたリポジトリをクローン（ユーザー名は自分のものに変更）
 git clone git@github.com:自分のユーザー名/schedule.git
 
-cd workplace/schedule
+cd workplace/schedule/
 ### 本家リポジトリを upstream という名前で登録
 git remote add upstream git@github.com:ValeriaTang/schedule.git
 ### 登録されたか確認
@@ -70,9 +70,9 @@ git checkout -b feature/ブランチ名
 ## (4)[変更の記録（コミット)]
    コードの追加や修正が終わったら、変更をステージングしてコミットします。
 ### 変更のあったファイルをステージング（※上層を巻き込まないようフォルダ指定を推奨）
-git add workplace/schedule/frontend/
+git add workplace/frontend/
 
-git add workplace/schedule/backend/
+git add workplace/backend/
 ### 状態の確認（緑色の文字だけがコミットされます）
 git status
 ### コミットメッセージを書いて記録
