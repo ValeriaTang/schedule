@@ -73,7 +73,11 @@ export const EventController = {
       `
 
       if (!existingEvent) {
-        return c.json({ error: '該当する予定が見つからないか、更新権限がありません' }, 404)
+        return c.json({ error: '該当する予定が見つかりません' }, 404)
+      }
+
+      if (existingEvent.created_by !== user.id && existingEvent.role !== 'admin') {
+        return c.json({ error: 'この予定を更新する権限がありません' }, 403)
       }
 
       const title = data.title ?? existingEvent.title
