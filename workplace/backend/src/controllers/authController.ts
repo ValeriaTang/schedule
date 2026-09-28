@@ -30,7 +30,8 @@ export const AuthController = {
 
       await TmpUserModel.create(name, email, hash, token)
 
-      const verifyUrl = `${process.env.FRONTEND_URL || 'https://schedule-eight-eta.vercel.app/'}/verify?token=${token}`
+      const frontendUrl = process.env.FRONTEND_URL || 'https://schedule-eight-eta.vercel.app'
+      const verifyUrl = `${frontendUrl}/verify.html?token=${token}`
 
       await resend.emails.send({
         from: 'onboarding@resend.dev',
