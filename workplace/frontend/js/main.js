@@ -1,16 +1,17 @@
 // =======================================
 // main.js
-// アプリ全体の管理（ダッシュボード・現在時刻表示）
+// アプリ全体の管理
 // =======================================
 
 document.addEventListener("DOMContentLoaded", async () => {
   console.log("Study Planner 起動");
 
-  // 1. 認証チェック（未ログインなら login.html へ自動リダイレクト）
-  const user = await requireAuth();
-  if (!user) return;
+  // ログイン確認（共通認証関数の実行）
+  if (typeof requireAuth === "function") {
+    const user = await requireAuth();
+    if (!user) return; // 未ログインなら requireAuth 内で login.html にリダイレクト
+  }
 
-  // 2. アプリ初期化
   initializeApp();
 });
 
@@ -20,16 +21,17 @@ document.addEventListener("DOMContentLoaded", async () => {
 function initializeApp() {
   console.log("初期化完了");
 
-  // 時計の初期表示と1秒ごとの更新
   updateClock();
+
+  // 1秒ごとに現在時刻を更新
   setInterval(updateClock, 1000);
 
-  // ダッシュボード（件数など）の更新
+  // ダッシュボード更新 (APIからデータ取得)
   updateDashboard();
 }
 
 // ---------------------------------------
-// 現在時刻表示
+// 現在時刻表示 (※ロジックはそのまま問題ありません)
 // ---------------------------------------
 function updateClock() {
   const now = new Date();
@@ -49,53 +51,51 @@ function updateClock() {
   }
 }
 
-// ---------------------------------------
-// ダッシュボード更新（API連携版）
-// ---------------------------------------
+// -------------------------------
+// ダッシュボード更新 (API連携版)
+// -------------------------------
 async function updateDashboard() {
   try {
-    // データベース（Neon）からイベント一覧を取得
-    const res = await fetch('/api/events', {
-      method: 'GET',
-      credentials: 'include', // HttpOnly Cookie (JWT) を自動送信
+    // 1. バックエンド API からイベント一覧を取得
+    const res = await fetch("/api/events", {
+      method: "GET",
+      credentials: "include", // HttpOnly Cookie を自動送信
     });
 
     if (!res.ok) {
-      console.error('ダッシュボードデータの取得に失敗しました');
+      console.error("ダッシュボードデータの取得に失敗しました");
       return;
     }
 
     const tasks = await res.json();
 
-    // 1. 全登録課題・イベント数
+    // 2. 全登録数
     const taskCountEl = document.getElementById("taskCount");
-    if (taskCountEl) {
-      taskCountEl.textContent = tasks.length;
-    }
+    if (taskCountEl) taskCountEl.textContent = tasks.length;
 
-    // 2. 今日の日付 (YYYY-MM-DD)
-    const todayStr = new Date().toISOString().split("T")[0];
+    // 3. 今日締切の計算 (日付フォーマット YYYY-MM-DD を抽出)
+    const today = new Date().toISOString().split("T")[0];
 
-    // 今日締切（end_time が本日の日付で始まるもの）
-    const todayTasks = tasks.filter(task => {
+    const todayTasks = tasks.filter((task) => {
       if (!task.end_time) return false;
-      return task.end_time.startsWith(todayStr);
+      // DB側の end_time (ISO文字列) から年月日(YYYY-MM-DD)部分を取り出して比較
+      const taskDeadlineDate = new Date(task.end_time).toISOString().split("T")[0];
+      return taskDeadlineDate === today;
     });
 
     const todayTaskCountEl = document.getElementById("todayTaskCount");
-    if (todayTaskCountEl) {
-      todayTaskCountEl.textContent = todayTasks.length;
-    }
+    if (todayTaskCountEl) todayTaskCountEl.textContent = todayTasks.length;
 
-    // 3. 優先度：高（DBの優先度フィールド、または特定の判定条件）
-    const highPriority = tasks.filter(task => task.priority === "高");
+    // 4. 優先度：高 のカウント
+    // ※ DBのイベントテーブルに priority または description 等で判定する場合の処理
+    const highPriority = tasks.filter(
+      (task) => task.priority === "高" || (task.description && task.description.includes("優先度:高"))
+    );
 
     const highPriorityCountEl = document.getElementById("highPriorityCount");
-    if (highPriorityCountEl) {
-      highPriorityCountEl.textContent = highPriority.length;
-    }
+    if (highPriorityCountEl) highPriorityCountEl.textContent = highPriority.length;
 
   } catch (err) {
-    console.error('ダッシュボード更新エラー:', err);
+    console.error("通信エラー:", err);
   }
 }
