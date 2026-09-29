@@ -1,9 +1,7 @@
-/**
- * ログイン状態をバックエンド（/api/auth/me）に問い合わせる
- * 未ログインの場合は自動的に login.html にリダイレクトする
- */
+// 全画面共通の認証確認関数
 async function requireAuth() {
-  if (window.location.pathname.endsWith('/login.html')) {
+  // 現在のファイル名が login.html の場合はチェック・転送を行わない
+  if (window.location.pathname.endsWith('login.html')) {
     return null;
   }
 
@@ -13,37 +11,17 @@ async function requireAuth() {
       credentials: 'include',
     });
 
-   if (!res.ok) {
-      // 未ログインなら login.html へ
-     window.location.href = '/login.html';
-     return null;
-   }
-
-   const data = await res.json();
-   return data.user;
- } catch (err) {
-     console.error('認証チェックエラー:', err);
-     window.location.href = '/login.html';
-     return null;
-   }
- }
-
-/**
- * ログアウト処理
- */
-async function logout() {
-  try {
-    const res = await fetch('/api/auth/logout', {
-      method: 'POST',
-      credentials: 'include',
-    });
-
-    if (res.ok) {
-      window.location.href = '/login.html';
-    } else {
-      alert('ログアウトに失敗しました');
+    if (!res.ok) {
+      // 未ログインなら現在の階層の login.html へ飛ばす
+      window.location.href = 'login.html';
+      return null;
     }
+
+    const data = await res.json();
+    return data.user;
   } catch (err) {
-    console.error('ログアウトエラー:', err);
+    console.error('認証チェックエラー:', err);
+    window.location.href = 'login.html';
+    return null;
   }
 }
