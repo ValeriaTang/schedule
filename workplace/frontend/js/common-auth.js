@@ -3,26 +3,30 @@
  * 未ログインの場合は自動的に login.html にリダイレクトする
  */
 async function requireAuth() {
+  if (window.location.pathname.endsWith('/login.html')) {
+    return null;
+  }
+
   try {
     const res = await fetch('/api/auth/me', {
       method: 'GET',
-      credentials: 'include', // HttpOnly Cookie を自動送信
+      credentials: 'include',
     });
 
-    if (!res.ok) {
-      // 認証エラーならログイン画面へ
-      window.location.href = '/login.html';
-      return null;
-    }
+   if (!res.ok) {
+      // 未ログインなら login.html へ
+     window.location.href = '/login.html';
+     return null;
+   }
 
-    const data = await res.json();
-    return data.user; // { id, email }
-  } catch (err) {
-    console.error('認証確認エラー:', err);
-    window.location.href = '/login.html';
-    return null;
-  }
-}
+   const data = await res.json();
+   return data.user;
+ } catch (err) {
+     console.error('認証チェックエラー:', err);
+     window.location.href = '/login.html';
+     return null;
+   }
+ }
 
 /**
  * ログアウト処理
