@@ -1,78 +1,157 @@
-// ページロード時に認証確認とカレンダー描画を開始
-document.addEventListener('DOMContentLoaded', async () => {
-  // 1. ログインチェック
-  const user = await requireAuth();
-  if (!user) return;
+// login.html 専用処理
 
-  // 2. カレンダーデータの読み込み
-  await initCalendar();
+// 1. 既にログイン済みならメイン画面（index.html）へ移動
+document.addEventListener('DOMContentLoaded', async () => {
+  try {
+    // API呼び出しも現在のパス基準または相対パスに変更
+    const res = await fetch('/api/auth/me', { credentials: 'include' });
+    if (res.ok) {
+      // ルート相対パス（/index.html）ではなく、相対パス（index.html または ./index.html）で移動
+      window.location.href = 'index.html';
+    }
+  } catch (err) {
+    // 未ログイン（401等）のときは何もしないで login.html を表示
+    console.log('未ログイン状態です');
+  }
 });
 
-/**
- * バックエンドからイベントを取得してカレンダーに表示する
- */
-async function initCalendar() {
+// 2. Google ログイン成功時の処理
+async function handleCredentialResponse(response) {
   try {
-    const res = await fetch('/api/events', {
-      method: 'GET',
+    const res = await fetch('/api/auth/google', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
+      body: JSON.stringify({ credential: response.credential }),
     });
 
-    if (!res.ok) {
-      throw new Error('予定の取得に失敗しました');
-    }
+    const data = await res.json();
 
-    const events = await res.json();
-    renderCalendarEvents(events);
+    if (res.ok) {
+      // 成功時も同階層の index.html へ移動
+      window.location.href = 'index.html';
+    } else {
+      alert(data.error || 'ログインに失敗しました');
+    }
   } catch (err) {
-    console.error('カレンダー読み込みエラー:', err);
+    console.error('通信エラー:', err);
+    alert('サーバーとの通信に失敗しました');
   }
-}
+}// login.html 専用処理
 
-/**
- * 取得したイベントリストを DOM に安全に挿入する (XSS対策)
- * @param {Array} events 
- */
-function renderCalendarEvents(events) {
-  const container = document.getElementById('calendar-events-list');
-  if (!container) return;
-
-  container.innerHTML = ''; // クリア
-
-  if (events.length === 0) {
-    const emptyMsg = document.createElement('p');
-    emptyMsg.textContent = '予定はありません';
-    container.appendChild(emptyMsg);
-    return;
+// 1. 既にログイン済みならメイン画面（index.html）へ移動
+document.addEventListener('DOMContentLoaded', async () => {
+  try {
+    // API呼び出しも現在のパス基準または相対パスに変更
+    const res = await fetch('/api/auth/me', { credentials: 'include' });
+    if (res.ok) {
+      // ルート相対パス（/index.html）ではなく、相対パス（index.html または ./index.html）で移動
+      window.location.href = 'index.html';
+    }
+  } catch (err) {
+    // 未ログイン（401等）のときは何もしないで login.html を表示
+    console.log('未ログイン状態です');
   }
+});
 
-  events.forEach((evt) => {
-    const item = document.createElement('div');
-    item.className = 'event-item';
-    if (evt.subject_color) {
-      item.style.borderLeft = `5px solid ${evt.subject_color}`;
+// 2. Google ログイン成功時の処理
+async function handleCredentialResponse(response) {
+  try {
+    const res = await fetch('/api/auth/google', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ credential: response.credential }),
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      // 成功時も同階層の index.html へ移動
+      window.location.href = 'index.html';
+    } else {
+      alert(data.error || 'ログインに失敗しました');
     }
+  } catch (err) {
+    console.error('通信エラー:', err);
+    alert('サーバーとの通信に失敗しました');
+  }
+}// login.html 専用処理
 
-    // タイトル (textContent で挿入し XSS を防ぐ)
-    const title = document.createElement('h4');
-    title.textContent = evt.title;
-
-    // 日時表示
-    const timeInfo = document.createElement('span');
-    const start = new Date(evt.start_time).toLocaleString();
-    const end = new Date(evt.end_time).toLocaleString();
-    timeInfo.textContent = `${start} 〜 ${end}`;
-
-    // 説明文 (存在する場合)
-    item.appendChild(title);
-    item.appendChild(timeInfo);
-
-    if (evt.description) {
-      const desc = document.createElement('p');
-      desc.textContent = evt.description;
-      item.appendChild(desc);
+// 1. 既にログイン済みならメイン画面（index.html）へ移動
+document.addEventListener('DOMContentLoaded', async () => {
+  try {
+    // API呼び出しも現在のパス基準または相対パスに変更
+    const res = await fetch('/api/auth/me', { credentials: 'include' });
+    if (res.ok) {
+      // ルート相対パス（/index.html）ではなく、相対パス（index.html または ./index.html）で移動
+      window.location.href = 'index.html';
     }
+  } catch (err) {
+    // 未ログイン（401等）のときは何もしないで login.html を表示
+    console.log('未ログイン状態です');
+  }
+});
 
-    container.appendChild(item);
-  });
+// 2. Google ログイン成功時の処理
+async function handleCredentialResponse(response) {
+  try {
+    const res = await fetch('/api/auth/google', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ credential: response.credential }),
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      // 成功時も同階層の index.html へ移動
+      window.location.href = 'index.html';
+    } else {
+      alert(data.error || 'ログインに失敗しました');
+    }
+  } catch (err) {
+    console.error('通信エラー:', err);
+    alert('サーバーとの通信に失敗しました');
+  }
+}// login.html 専用処理
+
+// 1. 既にログイン済みならメイン画面（index.html）へ移動
+document.addEventListener('DOMContentLoaded', async () => {
+  try {
+    // API呼び出しも現在のパス基準または相対パスに変更
+    const res = await fetch('/api/auth/me', { credentials: 'include' });
+    if (res.ok) {
+      // ルート相対パス（/index.html）ではなく、相対パス（index.html または ./index.html）で移動
+      window.location.href = 'index.html';
+    }
+  } catch (err) {
+    // 未ログイン（401等）のときは何もしないで login.html を表示
+    console.log('未ログイン状態です');
+  }
+});
+
+// 2. Google ログイン成功時の処理
+async function handleCredentialResponse(response) {
+  try {
+    const res = await fetch('/api/auth/google', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ credential: response.credential }),
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      // 成功時も同階層の index.html へ移動
+      window.location.href = 'index.html';
+    } else {
+      alert(data.error || 'ログインに失敗しました');
+    }
+  } catch (err) {
+    console.error('通信エラー:', err);
+    alert('サーバーとの通信に失敗しました');
+  }
 }

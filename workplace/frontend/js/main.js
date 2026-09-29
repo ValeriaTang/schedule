@@ -1,8 +1,3 @@
-// =======================================
-// main.js
-// アプリ全体の管理
-// =======================================
-
 document.addEventListener("DOMContentLoaded", async () => {
   console.log("Study Planner 起動");
 
@@ -29,10 +24,6 @@ function initializeApp() {
   // ダッシュボード更新 (APIからデータ取得)
   updateDashboard();
 }
-
-// ---------------------------------------
-// 現在時刻表示 (※ロジックはそのまま問題ありません)
-// ---------------------------------------
 function updateClock() {
   const now = new Date();
 
@@ -51,9 +42,6 @@ function updateClock() {
   }
 }
 
-// -------------------------------
-// ダッシュボード更新 (API連携版)
-// -------------------------------
 async function updateDashboard() {
   try {
     // 1. バックエンド API からイベント一覧を取得

@@ -65,3 +65,49 @@ async function addTask(title, deadline, description) {
     console.error('通信エラー:', err);
   }
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+  const addTaskButton = document.getElementById('addTaskButton');
+  const taskModal = document.getElementById('taskModal');
+  const closeModal = document.getElementById('closeModal');
+  const saveTaskButton = document.getElementById('saveTask');
+
+  // 初期表示でタスク一覧を取得
+  loadTasks();
+
+  // 1. 「＋ 課題追加」ボタンでモーダルを開く
+  if (addTaskButton && taskModal) {
+    addTaskButton.addEventListener('click', () => {
+      taskModal.style.display = 'block'; // モーダルを表示（CSSの設計に合わせて調整してください）
+    });
+  }
+
+  // 2. モーダルの「×」ボタンで閉じる
+  if (closeModal && taskModal) {
+    closeModal.addEventListener('click', () => {
+      taskModal.style.display = 'none';
+    });
+  }
+
+  // 3. 「保存」ボタンをクリックしたときの処理
+  if (saveTaskButton) {
+    saveTaskButton.addEventListener('click', async () => {
+      const title = document.getElementById('taskTitle')?.value;
+      const deadline = document.getElementById('deadline')?.value;
+      const priority = document.getElementById('priority')?.value;
+
+      if (!title || !deadline) {
+        alert('課題名と提出期限を入力してください');
+        return;
+      }
+
+      // API（POST /api/events）呼び出し
+      await addTask(title, deadline, `優先度:${priority}`);
+
+      // 入力フォームのクリア & モーダルを閉じる
+      document.getElementById('taskTitle').value = '';
+      document.getElementById('deadline').value = '';
+      if (taskModal) taskModal.style.display = 'none';
+    });
+  }
+});
