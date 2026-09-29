@@ -9,16 +9,38 @@ import authRoutes from './src/routes/authRoutes'
 
 const app = new Hono<Env>()
 
-// 1. セキュリティヘッダー
-app.use('*', secureHeaders())
+// 1. セキュリティヘッダー (Google ログインポップアップ通信を許可するために COOP を緩和)
+app.use(
+  '*',
+  secureHeaders({
+    crossOriginOpenerPolicy: 'unsafe-none',
+  })
+)
 
 // 2. CORS設定
-app.use('/api/*', cors({
-  origin: ['http://localhost:5500', 'https://schedule-eight-eta.vercel.app'],
-  credentials: true, // Cookie のやり取りを許可
-}))
+app.use(
+  '/api/*',
+  cors({
+    origin: ['http://127.0.0.1:5500', 'http://localhost:5500', 'https://schedule-eight-eta.vercel.app'],
+    credentials: true, // Cookie のやり取りを許可
+    allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowHeaders: ['Content-Type', 'Authorization'],
+  })
+)
 
-// 3. APIルートの登録
+// 3. エラーハンドラ (500エラー発生時にターミナルに詳しいログを出力させる)
+app.onError((err, c) => {
+  console.error('★ サーバーエラー詳細:', err)
+  return c.json(
+    {
+      error: 'サーバー内部エラーが発生しました',
+      message: err.message,
+    },
+    500
+  )
+})
+
+// 4. APIルートの登録
 app.route('/api/events', eventRoutes)
 app.route('/api/auth', authRoutes)
 
