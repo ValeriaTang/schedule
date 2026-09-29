@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const res = await fetch(`${API_BASE_URL}/api/auth/me`, { credentials: 'include' });
     if (res.ok) {
       // ログイン済みならメイン画面へ
-      window.location.href = '/index.html';
+      window.location.href = 'index.html';
     }
   } catch (err) {
     // 未ログイン（401等）やネットワークエラー時は何もしない（login.html をそのまま表示）
@@ -44,7 +44,7 @@ async function handleCredentialResponse(response) {
 
     if (res.ok) {
       // ログイン成功 -> メイン画面へ
-      window.location.href = '/index.html';
+      window.location.href = 'index.html';
     } else {
       alert(data.error || 'ログイン処理に失敗しました');
     }
