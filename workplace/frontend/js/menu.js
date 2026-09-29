@@ -20,6 +20,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const scheduleButton =
         document.getElementById("scheduleMenuButton");
 
+    const logoutButton = 
+        document.getElementById("logoutButton");
+
 
     // =========================
     // メニューボタン
@@ -270,6 +273,47 @@ function displaySchedules(){
     });
 
 }
+
+
+// =========================
+// ログアウト
+// =========================
+
+logoutButton.addEventListener("click", async () => {
+
+    const result = confirm("ログアウトしますか？");
+
+    if (!result) {
+        return;
+    }
+
+    try {
+
+        const res = await fetch("http://localhost:5000/api/auth/logout", {
+            method: "POST",
+            credentials: "include"
+        });
+
+        if (res.ok) {
+
+            alert("ログアウトしました");
+
+            window.location.href = "login.html";
+
+        } else {
+
+            alert("ログアウトに失敗しました");
+
+        }
+
+    } catch (error) {
+
+        console.error("ログアウトエラー:", error);
+        alert("サーバーとの通信に失敗しました");
+
+    }
+
+});
 
 
 // =========================

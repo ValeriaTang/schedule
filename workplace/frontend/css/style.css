@@ -136,6 +136,17 @@ header{
 
 }
 
+
+#logoutButton {
+    margin-top: 20px;
+    color: #e53935;
+    border-top: 1px solid #ddd;
+}
+
+#logoutButton:hover {
+    background: #ffebee;
+}
+
 /* ===================================
    中央
 =================================== */
