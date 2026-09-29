@@ -1,3 +1,7 @@
+const API_BASE_URL = window.location.hostname === 'localhost'
+  ? 'http://localhost:5000'
+  : '';
+
 // 1. 既にログイン済みなら index.html へリダイレクト
 document.addEventListener('DOMContentLoaded', async () => {
   try {
