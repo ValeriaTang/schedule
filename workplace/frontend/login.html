@@ -1,48 +1,96 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
   <meta charset="UTF-8">
+
   <title>ログイン - Schedule App</title>
-  <!-- Google Sign-In SDK の読み込み -->
+
+  <!-- ログイン画面のCSS -->
+  <link rel="stylesheet" href="css/auth.css">
+
+  <!-- Googleログイン -->
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="js/google-auth.js"></script>
 </head>
-<body>
-  <h2>Schedule App にログイン</h2>
 
-  <!-- Google ログインボタン表示用要素 -->
-  <div id="g_id_onload"
-       data-client_id="1067955587484-jiuifljib05r35bfj25orgjucl2ctjbe.apps.googleusercontent.com"
-       data-callback="handleCredentialResponse">
+<body>
+
+  <div class="auth-container">
+
+    <div class="auth-box">
+
+      <h1>Schedule App</h1>
+
+      <h2>ログイン</h2>
+
+      <p class="login-description">
+        Googleアカウントを使用してログインしてください。
+      </p>
+
+      <!-- Googleログイン -->
+      <div
+        id="g_id_onload"
+        data-client_id="1067955587484-jiuifljib05r35bfj25orgjucl2ctjbe.apps.googleusercontent.com"
+        data-callback="handleCredentialResponse">
+      </div>
+
+      <div class="google-login">
+        <div
+          class="g_id_signin"
+          data-type="standard"
+          data-size="large">
+        </div>
+      </div>
+
+    </div>
+
   </div>
-  <div class="g_id_signin" data-type="standard"></div>
 
   <script>
-    // Googleログイン完了時に実行される関数
     async function handleCredentialResponse(response) {
-      // response.credential に Google の ID トークンが入っています
+
       try {
-        const res = await fetch('/api/auth/google', {
+
+        const res = await fetch('http://localhost:5000/api/auth/google', {
           method: 'POST',
+
           headers: {
             'Content-Type': 'application/json',
           },
-          credentials: 'include', // HttpOnly Cookie を受け取るため必須
-          body: JSON.stringify({ credential: response.credential }),
+
+          credentials: 'include',
+
+          body: JSON.stringify({
+            credential: response.credential
+          }),
         });
 
         const data = await res.json();
 
         if (res.ok) {
+
           alert('ログインに成功しました！');
-          window.location.href = '/'; // メイン画面へ遷移
+
+          window.location.href = 'index.html';
+
         } else {
-          alert(data.error || 'ログインに失敗しました');
+
+          alert(
+            data.error ||
+            'ログインに失敗しました'
+          );
+
         }
+
       } catch (err) {
+
         console.error('通信エラー:', err);
+
       }
+
     }
   </script>
+
 </body>
 </html>
