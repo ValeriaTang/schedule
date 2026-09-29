@@ -9,7 +9,7 @@ import { UserModel } from '../models/userModel'
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID)
 
-// JWT秘密鍵を厳格に取得（フォールバック禁止）
+// JWT秘密鍵の厳格取得
 const getJwtSecret = (): string => {
   const secret = process.env.JWT_SECRET
   if (!secret) {
@@ -19,7 +19,7 @@ const getJwtSecret = (): string => {
 }
 
 export const AuthController = {
-  // 1. Google ログイン・新規登録
+  // 1. Google ログイン・新規自動登録
   async googleLogin(c: AppContext, credential: string) {
     try {
       const ticket = await googleClient.verifyIdToken({
@@ -33,8 +33,11 @@ export const AuthController = {
       }
 
       const { email, name } = payload
+
+      // 既存ユーザーの検索
       let user = await UserModel.findByEmail(email)
 
+      // 初回ログイン時は自動登録
       if (!user) {
         const dummyHash = await argon2.hash(crypto.randomUUID())
         const [newUser] = await sql`
@@ -45,15 +48,17 @@ export const AuthController = {
         user = newUser
       }
 
+      // JWT トークン発行
       const token = await sign(
         {
           id: user.id,
           email: user.email,
-          exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24, // 24時間
+          exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24,
         },
         getJwtSecret()
       )
 
+      // Cookieに保存 (HttpOnly)
       setCookie(c, 'token', token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
