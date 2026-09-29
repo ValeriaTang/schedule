@@ -13,13 +13,10 @@ const app = new Hono<Env>()
 app.use('*', secureHeaders())
 
 // 2. CORS設定
-app.use(
-  '/api/*',
-  cors({
-    origin: (origin) => origin || '*',
-    credentials: true,
-  })
-)
+app.use('/api/*', cors({
+  origin: ['http://localhost:5500', 'https://schedule-eight-eta.vercel.app'],
+  credentials: true, // Cookie のやり取りを許可
+}))
 
 // 3. APIルートの登録
 app.route('/api/events', eventRoutes)
