@@ -21,7 +21,9 @@
     "express": "^5.2.1",
     "google-auth-library": "^11.1.0",
     "hono": "^4.13.2",
-    "resend": "^6.30.0"
+    "hono-rate-limiter": "^0.5.4",
+    "resend": "^6.30.0",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
