@@ -1,6 +1,4 @@
 document.addEventListener("DOMContentLoaded", async () => {
-  console.log("Study Planner 起動");
-
   // ログイン確認（共通認証関数の実行）
   if (typeof requireAuth === "function") {
     const user = await requireAuth();
@@ -44,10 +42,9 @@ function updateClock() {
 
 async function updateDashboard() {
   try {
-    // 1. バックエンド API からイベント一覧を取得
-    const res = await fetch("/api/events", {
+    const res = await fetch(`${API_BASE_URL}/api/events`, {
       method: "GET",
-      credentials: "include", // HttpOnly Cookie を自動送信
+      credentials: "include", // Cookie送信
     });
 
     if (!res.ok) {

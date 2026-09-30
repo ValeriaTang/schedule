@@ -20,6 +20,7 @@ export type Env = {
   Variables: {
     jwtPayload: JWTPayload
     user: User | null
+    groupRole?: string // 追加
   }
 }
 
