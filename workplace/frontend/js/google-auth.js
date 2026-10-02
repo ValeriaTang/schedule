@@ -1,49 +1,78 @@
-// 環境（ローカルか本番か）に応じて API のベース URL を自動切り替え
-const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-  ? 'http://localhost:5000'
-  : '';
+let codeClient;
 
-// 1. 既にログイン済みなら index.html へリダイレクト
-document.addEventListener('DOMContentLoaded', async () => {
-  try {
-    const res = await fetch(`${API_BASE_URL}/api/auth/me`, { credentials: 'include' });
-    if (res.ok) {
-      // ログイン済みならメイン画面へ
-      window.location.href = 'index.html';
-    }
-  } catch (err) {
-    // 未ログイン（401等）やネットワークエラー時は何もしない（login.html をそのまま表示）
-    console.log('未ログイン状態です');
+// Google OAuth クライアントの初期化
+function initGoogleAuth() {
+  if (typeof google === 'undefined' || !google.accounts) {
+    console.warn('Google SDK がまだ読み込まれていません。再試行します...');
+    setTimeout(initGoogleAuth, 500); // 0.5秒後に再試行
+    return;
   }
+
+  codeClient = google.accounts.oauth2.initCodeClient({
+    client_id: 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com', // ★ご自身のクライアントIDに置き換えてください
+    scope: [
+      'openid',
+      'email',
+      'profile',
+      'https://www.googleapis.com/auth/calendar.readonlyr',
+      'https://www.googleapis.com/classroom.courses.readonlys',
+      'https://www.googleapis.com/auth/userinfo.email',
+      'https://www.googleapis.com/auth/userinfo.profile'
+    ].join(' '),
+    ux_mode: 'popup',
+    callback: handleCodeResponse,
+  });
+}
+
+// 画面読み込み時の初期化
+document.addEventListener('DOMContentLoaded', () => {
+  // ログイン済みなら index.html にリダイレクト
+  if (typeof redirectIfAuthenticated === 'function') {
+    redirectIfAuthenticated();
+  }
+
+  // Google OAuth クライアント初期化
+  initGoogleAuth();
 });
 
-// 2. Google ログインボタンのコールバック関数
-async function handleCredentialResponse(response) {
-  try {
-    // 1. レスポンスから Google ID トークンを取得
-    const idToken = response.credential;
-
-    if (!idToken) {
-      console.error('Google からトークンを取得できませんでした');
-      return;
+// ボタンクリック時に呼び出す関数
+function loginWithGoogle() {
+  if (codeClient) {
+    codeClient.requestCode();
+  } else {
+    // まだ初期化できていない場合は再試行してから実行
+    initGoogleAuth();
+    if (codeClient) {
+      codeClient.requestCode();
+    } else {
+      alert('Google ログインの初期化中です。少々お待ちください。');
     }
+  }
+}
 
-    // 2. バックエンドへ送信 (API_BASE_URL を使用)
+// Google ポップアップ完了後のコールバック処理
+async function handleCodeResponse(response) {
+  if (response.error) {
+    console.error('Google 認可エラー:', response.error);
+    return;
+  }
+
+  try {
+    // 認可コード (code) をバックエンドへ送信
     const res = await fetch(`${API_BASE_URL}/api/auth/google`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      credentials: 'include', // HttpOnly Cookie (JWT) の送受信に必須
+      credentials: 'include',
       body: JSON.stringify({
-        credential: idToken, // ★ バックエンド側が期待するキー名 "credential"
+        code: response.code,
       }),
     });
 
     const data = await res.json();
 
     if (res.ok) {
-      // ログイン成功 -> メイン画面へ
       window.location.href = 'index.html';
     } else {
       alert(data.error || 'ログイン処理に失敗しました');
