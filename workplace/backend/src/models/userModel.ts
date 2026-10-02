@@ -2,65 +2,65 @@ import { sql } from '../config/db'
 
 export interface User {
   id: number
-  google_id?: string
+  google_id: string
   name: string
   email: string
   picture?: string
-  created_at?: Date
+  google_access_token?: string
+  google_refresh_token?: string
+  google_token_expires_at?: number
 }
 
 export const UserModel = {
-
   async findByGoogleId(googleId: string): Promise<User | null> {
-    const rows = await sql`
-      SELECT id, google_id, name, email, picture
-      FROM users
-      WHERE google_id = ${googleId}
-      LIMIT 1
-    `
-    if (rows.length === 0) {
-      return null
-    }
-    return rows[0] as User
+    const result = await sql`SELECT * FROM users WHERE google_id = ${googleId}`
+    if (result.length === 0) return null
+    return result[0] as User
   },
 
-  // メールアドレスでユーザーを検索
   async findByEmail(email: string): Promise<User | null> {
-    const rows = await sql`
-      SELECT id, google_id, name, email, picture
-      FROM users
-      WHERE email = ${email}
-      LIMIT 1
-    `
-    if (rows.length === 0) {
-      return null
-    }
-    return rows[0] as User
+    const result = await sql`SELECT * FROM users WHERE email = ${email}`
+    if (result.length === 0) return null
+    return result[0] as User
   },
 
-  // ID（主キー）でユーザーを検索
-  async findById(id: string | number): Promise<User | null> {
-    const users = await sql`
-      SELECT id, google_id, name, email, picture
-      FROM users
-      WHERE id = ${id}
-      LIMIT 1
-    `
-    return (users[0] as User) || null
-  },
-
-  // Google ユーザーの新規作成
   async createGoogleUser(
     googleId: string,
     name: string,
     email: string,
-    picture?: string
+    picture: string
   ): Promise<User> {
-    const [newUser] = await sql`
+    const result = await sql`
       INSERT INTO users (google_id, name, email, picture)
-      VALUES (${googleId}, ${name || 'Google User'}, ${email}, ${picture || null})
-      RETURNING id, google_id, name, email, picture
+      VALUES (${googleId}, ${name}, ${email}, ${picture})
+      RETURNING *
     `
-    return newUser as User
-  }
+    return result[0] as User
+  },
+
+  async updateGoogleTokens(
+    userId: number,
+    tokens: {
+      accessToken: string | null
+      refreshToken: string | null
+      expiryDate: number | null
+    }
+  ) {
+    if (tokens.refreshToken) {
+      await sql`
+        UPDATE users
+        SET google_access_token = ${tokens.accessToken},
+            google_refresh_token = ${tokens.refreshToken},
+            google_token_expires_at = ${tokens.expiryDate}
+        WHERE id = ${userId}
+      `
+    } else {
+      await sql`
+        UPDATE users
+        SET google_access_token = ${tokens.accessToken},
+            google_token_expires_at = ${tokens.expiryDate}
+        WHERE id = ${userId}
+      `
+    }
+  },
 }

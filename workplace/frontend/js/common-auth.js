@@ -1,40 +1,42 @@
-// commonAuth.js
-const API_BASE_URL = "http://localhost:5000";
+// APIのベースURL（環境に合わせて自動判別）
+const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  ? 'http://localhost:5000'
+  : '';
 
-// 認証チェックを行い、ユーザー情報を返す
+// ログイン状態のチェック（ユーザー情報を返す）
 async function checkAuth() {
   try {
     const res = await fetch(`${API_BASE_URL}/api/auth/me`, {
-      method: "GET",
-      credentials: "include",
+      method: 'GET',
+      credentials: 'include',
     });
     if (res.ok) {
-      return await res.json();
+      const data = await res.json();
+      return data.user;
     }
     return null;
   } catch (err) {
-    console.error("認証チェック失敗:", err);
+    console.error('認証チェック失敗:', err);
     return null;
   }
 }
 
-// 保護されたページ（index.htmlなど）用：未ログインなら login.html へ
+// メイン画面（index.html等）用：未ログインなら login.html へ飛ばす
 async function requireAuth() {
   const user = await checkAuth();
   if (!user) {
-    // 既に login.html にいる場合はリダイレクトしない（ループ防止）
-    if (!window.location.pathname.endsWith("login.html")) {
-      window.location.href = "login.html";
+    if (!window.location.pathname.endsWith('login.html')) {
+      window.location.href = 'login.html';
     }
     return null;
   }
   return user;
 }
 
-// ログインページ（login.html）用：すでにログイン済みなら index.html へ
+// ログイン画面（login.html）用：ログイン済みなら index.html へ飛ばす
 async function redirectIfAuthenticated() {
   const user = await checkAuth();
   if (user) {
-    window.location.href = "index.html";
+    window.location.href = 'index.html';
   }
 }
