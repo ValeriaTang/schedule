@@ -1,12 +1,7 @@
-// APIのベースURL（環境に合わせて自動判別）
-const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-  ? 'http://localhost:5000'
-  : '';
-
 // ログイン状態のチェック（ユーザー情報を返す）
-async function checkAuth() {
+async function checkAuth(API_BASE_URL_ARG) {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/auth/me`, {
+    const res = await fetch(`${API_BASE_URL_ARG}/api/auth/me`, {
       method: 'GET',
       credentials: 'include',
     });
@@ -22,8 +17,8 @@ async function checkAuth() {
 }
 
 // メイン画面（index.html等）用：未ログインなら login.html へ飛ばす
-async function requireAuth() {
-  const user = await checkAuth();
+async function requireAuth(API_BASE_URL_ARG) {
+  const user = await checkAuth(API_BASE_URL_ARG);
   if (!user) {
     if (!window.location.pathname.endsWith('login.html')) {
       window.location.href = 'login.html';
@@ -34,8 +29,8 @@ async function requireAuth() {
 }
 
 // ログイン画面（login.html）用：ログイン済みなら index.html へ飛ばす
-async function redirectIfAuthenticated() {
-  const user = await checkAuth();
+async function redirectIfAuthenticated(API_BASE_URL_ARG) {
+  const user = await checkAuth(API_BASE_URL_ARG);
   if (user) {
     window.location.href = 'index.html';
   }
