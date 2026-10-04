@@ -1,3 +1,8 @@
+// 環境（ローカルか本番か）に応じて API のベース URL を自動切り替え
+const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  ? 'http://localhost:5000'
+  : '';
+
 let calendar;
 
 document.addEventListener("DOMContentLoaded", () => {
