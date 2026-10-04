@@ -9,7 +9,7 @@ import authRoutes from './src/routes/authRoutes'
 
 const app = new Hono<Env>()
 
-// 1. セキュリティヘッダー (Google ログインポップアップ通信を許可するために COOP を緩和)
+// 1. セキュリティヘッダー
 app.use(
   '*',
   secureHeaders({
@@ -21,14 +21,26 @@ app.use(
 app.use(
   '/api/*',
   cors({
-    origin: ['http://127.0.0.1:5500', 'http://localhost:5500', 'https://schedule-sai.vercel.app'],
-    credentials: true, // Cookie のやり取りを許可
+    origin: (origin) => {
+      const allowedOrigins = [
+        'http://127.0.0.1:5500',
+        'http://localhost:5500',
+        'http://127.0.0.1:5000',
+        'http://localhost:5000',
+        'https://schedule-sai.vercel.app',
+      ]
+      if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
+        return origin || '*'
+      }
+      return null
+    },
+    credentials: true,
     allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowHeaders: ['Content-Type', 'Authorization'],
   })
 )
 
-// 3. エラーハンドラ (500エラー発生時にターミナルに詳しいログを出力させる)
+// 3. エラーハンドラ
 app.onError((err, c) => {
   console.error('★ サーバーエラー詳細:', err)
   return c.json(
@@ -44,7 +56,7 @@ app.onError((err, c) => {
 app.route('/api/events', eventRoutes)
 app.route('/api/auth', authRoutes)
 
-// ローカル開発用サーバー起動
+// 5. ローカル開発用サーバー起動
 if (process.env.NODE_ENV !== 'production') {
   const port = Number(process.env.PORT) || 5000
   serve(
@@ -58,5 +70,13 @@ if (process.env.NODE_ENV !== 'production') {
     }
   )
 }
+
+// Vercel Serverless Functions 用 (fetch をそのままエクスポート)
+export const GET = app.fetch
+export const POST = app.fetch
+export const PUT = app.fetch
+export const DELETE = app.fetch
+export const PATCH = app.fetch
+export const OPTIONS = app.fetch
 
 export default app

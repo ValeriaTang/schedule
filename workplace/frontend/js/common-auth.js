@@ -1,6 +1,6 @@
 window.API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
   ? 'http://localhost:5000'
-  : '';
+  : 'https://schedule-backend-navy.vercel.app';
 
 // window.API_BASE_URL でも単体の API_BASE_URL でアクセスできるように定義
 const API_BASE_URL = window.API_BASE_URL;
