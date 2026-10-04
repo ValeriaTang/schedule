@@ -1,7 +1,13 @@
+// 環境（ローカルか本番か）に応じて API のベース URL を自動切り替え
+const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+  ? 'http://localhost:5000'
+  : '';
+
+
 document.addEventListener('DOMContentLoaded', async () => {
   // 1. ログイン状態の確認 (未ログインなら login.html へ強制リダイレクト)
   try {
-    const res = await fetch('/api/auth/me', { credentials: 'include' });
+    const res = await fetch(`${API_BASE_URL}/api/auth/me`, { credentials: 'include' });
     if (!res.ok) {
       window.location.href = '/login.html';
       return;
@@ -20,7 +26,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (logoutBtn) {
     logoutBtn.addEventListener('click', async () => {
       try {
-        await fetch('/api/auth/logout', {
+        await fetch(`${API_BASE_URL}/api/auth/logout`, {
           method: 'POST',
           credentials: 'include',
         });
