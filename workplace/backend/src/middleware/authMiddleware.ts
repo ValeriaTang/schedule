@@ -7,7 +7,8 @@ export const authCheck = async (c: Context, next: Next) => {
   const token = getCookie(c, 'token') || c.req.header('Authorization')?.replace('Bearer ', '')
 
   if (!token) {
-    return c.json({ error: '認証トークンがありません (400/401)' }, 400)
+    // 400 から 401 に変更
+    return c.json({ error: '認証トークンがありません' }, 401)
   }
 
   try {
