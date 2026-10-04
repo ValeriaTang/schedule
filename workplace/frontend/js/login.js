@@ -1,21 +1,72 @@
-// 環境（ローカルか本番か）に応じて API のベース URL を自動切り替え
-const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-  ? 'http://localhost:5000'
-  : '';
+let codeClient;
+
+// Google OAuth クライアントの初期化
+function initGoogleAuth() {
+  if (typeof google === 'undefined' || !google.accounts) {
+    console.warn('Google SDK がまだ読み込まれていません。再試行します...');
+    setTimeout(initGoogleAuth, 500); // 0.5秒後に再試行
+    return;
+  }
+
+  codeClient = google.accounts.oauth2.initCodeClient({
+    client_id: '1067955587484-jiuifljib05r35bfj25orgjucl2ctjbe.apps.googleusercontent.com', // login.html の data-client_id と同じもの
+    scope: [
+      'openid',
+      'email',
+      'profile',
+      'https://www.googleapis.com/auth/calendar.readonly',
+      'https://www.googleapis.com/auth/classroom.courses.readonly'
+    ].join(' '),
+    ux_mode: 'popup',
+    callback: handleCodeResponse, // 認可コード交換後のコールバック
+  });
+}
 
 // 1. 既にログイン済みならメイン画面（index.html）へ移動
 document.addEventListener('DOMContentLoaded', async () => {
-  redirectIfAuthenticated(API_BASE_URL);
+  // ログイン状態をチェック
+  if (typeof redirectIfAuthenticated === 'function') {
+    redirectIfAuthenticated(API_BASE_URL);
+  }
+
+  // Google OAuth クライアント初期化
+  initGoogleAuth();
 });
 
-// 2. Google ログイン成功時の処理 (GSI コールバック)
-window.handleCredentialResponse = async (response) => {
+// ボタンクリック時に呼び出す関数（GSI ボタンの代わりに使用）
+function loginWithGoogle() {
+  if (codeClient) {
+    codeClient.requestCode();
+  } else {
+    // まだ初期化できていない場合は再試行してから実行
+    initGoogleAuth();
+    setTimeout(() => {
+      if (codeClient) {
+        codeClient.requestCode();
+      } else {
+        alert('Google ログインの初期化中です。少々お待ちください。');
+      }
+    }, 1000);
+  }
+}
+
+// Google ポップアップ完了後のコールバック処理
+async function handleCodeResponse(response) {
+  if (response.error) {
+    console.error('Google 認可エラー:', response.error);
+    return;
+  }
+
   try {
     const res = await fetch(`${API_BASE_URL}/api/auth/google`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+      },
       credentials: 'include',
-      body: JSON.stringify({ credential: response.credential }),
+      body: JSON.stringify({
+        code: response.code,
+      }),
     });
 
     const data = await res.json();
@@ -23,7 +74,9 @@ window.handleCredentialResponse = async (response) => {
     if (res.ok) {
       window.location.href = 'index.html';
     } else {
-      alert(data.error || 'ログインに失敗しました');
+      // サーバーから返ってきた具体的なエラー詳細をコンソールに出力
+      console.error('バックエンド認証エラー詳細:', data);
+      alert(data.error || 'ログイン処理に失敗しました');
     }
   } catch (err) {
     console.error('通信エラー:', err);
