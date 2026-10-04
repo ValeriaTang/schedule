@@ -21,7 +21,7 @@ app.use(
 app.use(
   '/api/*',
   cors({
-    origin: ['http://127.0.0.1:5500', 'http://localhost:5500', 'https://schedule-eight-eta.vercel.app'],
+    origin: ['http://127.0.0.1:5500', 'http://localhost:5500', 'https://schedule-sai.vercel.app'],
     credentials: true, // Cookie のやり取りを許可
     allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowHeaders: ['Content-Type', 'Authorization'],
