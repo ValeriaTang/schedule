@@ -26,6 +26,10 @@
 - `POST /api/groups/join` または `POST /api/groups/:id/join`
   - 概要: 招待コードやIDを使ってグループに参加する
 
+グループAPIを使う前に、`workplace/backend/migrations/20261030_add_group_name.sql` を
+NeonのSQL Editorで一度実行してください。既存の `group_name` 列があればその値を引き継ぎ、
+なければ既存グループ名を `グループ <ID>` として補完します。
+
 ## グループ内共有イベント API
 - `GET /api/groups/:id/events`
   - 概要: 指定したグループ内で共有されているイベント一覧を取得する
