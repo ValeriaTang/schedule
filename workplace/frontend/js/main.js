@@ -58,12 +58,10 @@ function updateClock() {
 async function updateDashboard() {
   const groupId = localStorage.getItem("selectedGroupId");
 
-  const taskCountEl = document.getElementById("taskCount");
   const todayTaskCountEl = document.getElementById("todayTaskCount");
   const highPriorityCountEl = document.getElementById("highPriorityCount");
 
   if (!groupId) {
-    if (taskCountEl) taskCountEl.textContent = "0";
     if (todayTaskCountEl) todayTaskCountEl.textContent = "0";
     if (highPriorityCountEl) highPriorityCountEl.textContent = "0";
     return;
@@ -94,10 +92,6 @@ async function updateDashboard() {
     const tasks = events.filter((event) =>
       (event.description || "").startsWith("[課題]")
     );
-
-    if (taskCountEl) {
-      taskCountEl.textContent = tasks.length;
-    }
 
     // 今日が期限の課題
     const today = new Date().toLocaleDateString("sv-SE", {

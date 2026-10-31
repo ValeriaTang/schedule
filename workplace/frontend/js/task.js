@@ -17,6 +17,9 @@ async function loadTasks() {
 
 // 課題カードの表示
 function renderTaskList(tasks, emptyMessage = '課題はありません。') {
+  const taskCount = document.getElementById('taskCount');
+  if (taskCount) taskCount.textContent = String(tasks.length);
+
   const container = document.getElementById('taskList');
   if (!container) return;
 
