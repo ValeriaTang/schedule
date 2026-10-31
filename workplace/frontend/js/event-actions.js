@@ -88,6 +88,10 @@ window.EventActions = (() => {
     );
   }
 
+  function roleForEvent(event, groupRole) {
+    return groupRole || groupRoles.get(String(event.group_id));
+  }
+
   function dateTimeInTokyo(value) {
     const parts = new Intl.DateTimeFormat("sv-SE", {
       timeZone: "Asia/Tokyo",
@@ -112,26 +116,28 @@ window.EventActions = (() => {
 
   function addControls(container, event, groupRole) {
     ready.then(() => {
-      if (!container.isConnected || !canManage(event, groupRole)) return;
+      const role = roleForEvent(event, groupRole);
+      if (!container.isConnected || !canManage(event, role)) return;
 
       const controls = document.createElement("div");
       controls.className = "event-action-buttons";
       controls.append(
-        makeActionButton("編集", "event-edit-button", () => open(event, groupRole)),
-        makeActionButton("削除", "event-delete-button", () => remove(event, groupRole))
+        makeActionButton("編集", "event-edit-button", () => open(event, role)),
+        makeActionButton("削除", "event-delete-button", () => remove(event, role))
       );
       container.appendChild(controls);
     });
   }
 
   function open(event, groupRole) {
-    if (!canManage(event, groupRole)) {
+    const role = roleForEvent(event, groupRole);
+    if (!canManage(event, role)) {
       window.alert("この予定・課題を編集する権限がありません。");
       return;
     }
 
     editingEvent = event;
-    editingGroupRole = groupRole || null;
+    editingGroupRole = role || null;
     const task = isTask(event);
     heading.textContent = task ? "課題を編集" : "予定を編集";
     titleInput.value = event.title || "";
@@ -175,10 +181,15 @@ window.EventActions = (() => {
     if (typeof updateCalendar === "function") updateCalendar();
     if (typeof loadTasks === "function") loadTasks();
     if (typeof updateDashboard === "function") updateDashboard();
+    const schedulePanel = document.getElementById("schedulePanel");
+    if (schedulePanel && !schedulePanel.hidden && typeof displaySchedules === "function") {
+      displaySchedules();
+    }
   }
 
   async function remove(event, groupRole) {
-    if (!canManage(event, groupRole)) {
+    const role = roleForEvent(event, groupRole);
+    if (!canManage(event, role)) {
       window.alert("この予定・課題を削除する権限がありません。");
       return;
     }
@@ -269,6 +280,7 @@ window.EventActions = (() => {
   return {
     ready,
     canManage,
+    roleForEvent,
     open,
     remove,
     addControls,
