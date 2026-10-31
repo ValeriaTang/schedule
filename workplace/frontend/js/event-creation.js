@@ -2,6 +2,7 @@ window.EventCreation = (() => {
   const groupSelectors = [
     document.getElementById("taskGroupId"),
     document.getElementById("scheduleGroupId"),
+    document.getElementById("googleImportGroup"),
   ].filter(Boolean);
 
   let groups = [];
@@ -86,5 +87,5 @@ window.EventCreation = (() => {
     if (typeof updateCalendar === "function") updateCalendar();
   }
 
-  return { ready, selectedGroupId, activateGroup };
+  return { ready, selectedGroupId, activateGroup, groups: () => groups };
 })();
