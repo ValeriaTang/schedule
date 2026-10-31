@@ -1,6 +1,7 @@
 // 課題一覧の取得と表示
 async function loadTasks() {
   try {
+    await window.EventActions.ready;
     const groupId = localStorage.getItem('selectedGroupId');
 
     if (!groupId) {
@@ -67,6 +68,7 @@ function renderTaskList(tasks) {
 
     card.appendChild(title);
     card.appendChild(deadline);
+    window.EventActions.addControls(card, task);
     container.appendChild(card);
   });
 }

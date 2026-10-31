@@ -137,11 +137,19 @@ export const GroupController = {
       )
     }
 
-    await sql`
+    const joined = await sql`
       INSERT INTO group_members (group_id, user_id, role)
       VALUES (${group.id}, ${userId}, 'member')
       ON CONFLICT (group_id, user_id) DO NOTHING
+      RETURNING group_id
     `
+
+    if (joined.length === 0) {
+      return c.json(
+        { error: `「${group.name}」にはすでに参加しています` },
+        409
+      )
+    }
 
     return c.json({ message: 'グループに参加しました', group })
   },

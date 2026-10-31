@@ -181,7 +181,8 @@ header {
 }
 
 #calendar {
-    min-height: clamp(500px, 65vh, 900px);
+    height: clamp(360px, calc(100dvh - 320px), 680px);
+    min-height: 0;
 }
 
 /* 課題・予定一覧表示領域 */
@@ -460,7 +461,8 @@ header {
     }
 
     #calendar {
-        min-height: 500px;
+        height: clamp(360px, calc(100dvh - 260px), 600px);
+        min-height: 0;
     }
 
     #taskModal,
