@@ -143,31 +143,8 @@ window.EventListFilters = (() => {
     const selectedGroups = groups.filter((group) =>
       selectedIds.includes(String(group.id))
     );
-    const results = await Promise.all(selectedGroups.map(async (group) => {
-      const response = await fetch(
-        `${apiBaseUrl()}/api/events?groupId=${encodeURIComponent(group.id)}`,
-        { credentials: "include" }
-      );
-      if (response.status === 401) {
-        window.location.href = "login.html";
-        throw new Error("ログインの有効期限が切れています。再ログインしてください。");
-      }
-      if (!response.ok) {
-        throw new Error(`「${group.name}」の予定・課題を取得できませんでした。`);
-      }
-      const data = await response.json();
-      if (!Array.isArray(data.events)) {
-        throw new Error(`「${group.name}」の予定・課題データの形式が正しくありません。`);
-      }
-      return data.events.map((event) => ({
-        ...event,
-        group_name: group.name || "名称未設定グループ",
-      }));
-    }));
+    let events = await fetchEventsForGroups(selectedGroups, kind);
 
-    let events = results.flat().filter((event) =>
-      (event.description || "").startsWith(kind === "task" ? "[課題]" : "[予定]")
-    );
     if (state.ownInput.checked) {
       events = events.filter((event) => String(event.created_by) === String(currentUserId));
     }
@@ -198,11 +175,45 @@ window.EventListFilters = (() => {
     return events;
   }
 
+  async function getAllEvents(kind) {
+    if (!states.has(kind)) throw new Error("一覧フィルターが初期化されていません。");
+    await initialization;
+    return fetchEventsForGroups(groups, kind);
+  }
+
+  async function fetchEventsForGroups(selectedGroups, kind) {
+    const results = await Promise.all(selectedGroups.map(async (group) => {
+      const response = await fetch(
+        `${apiBaseUrl()}/api/events?groupId=${encodeURIComponent(group.id)}`,
+        { credentials: "include" }
+      );
+      if (response.status === 401) {
+        window.location.href = "login.html";
+        throw new Error("ログインの有効期限が切れています。再ログインしてください。");
+      }
+      if (!response.ok) {
+        throw new Error(`「${group.name}」の予定・課題を取得できませんでした。`);
+      }
+      const data = await response.json();
+      if (!Array.isArray(data.events)) {
+        throw new Error(`「${group.name}」の予定・課題データの形式が正しくありません。`);
+      }
+      return data.events.map((event) => ({
+        ...event,
+        group_name: group.name || "名称未設定グループ",
+      }));
+    }));
+
+    return results.flat().filter((event) =>
+      (event.description || "").startsWith(kind === "task" ? "[課題]" : "[予定]")
+    );
+  }
+
   function selectedGroupCount(kind) {
     const state = states.get(kind);
     if (!state) return 0;
     return state.groupContainer.querySelectorAll('input[type="checkbox"]:checked').length;
   }
 
-  return { initialize, getEvents, selectedGroupCount };
+  return { initialize, getEvents, getAllEvents, selectedGroupCount };
 })();
