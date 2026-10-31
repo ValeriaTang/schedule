@@ -73,7 +73,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       throw new Error("ログインの有効期限が切れています。再ログインしてください。");
     }
     if (!response.ok) {
-      throw new Error(data.error || data.message || "通信に失敗しました。");
+      const error = new Error(data.error || data.message || "通信に失敗しました。");
+      error.status = response.status;
+      throw error;
     }
     return data;
   }
@@ -393,6 +395,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       setGroupMessage(data.message || "グループに参加しました。");
       joinGroupForm.reset();
     } catch (error) {
+      if (error.status === 409) {
+        setGroupMessage(error.message);
+        return;
+      }
       console.error("グループ参加に失敗しました:", error);
       setGroupMessage(error.message || "グループに参加できませんでした。", true);
     } finally {

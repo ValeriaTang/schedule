@@ -322,6 +322,36 @@ header {
     font-size: clamp(14px, 1vw, 18px);
 }
 
+#taskModal #taskTitle,
+#scheduleModal #scheduleTitle {
+    width: min(100%, 42ch);
+}
+
+#taskModal #deadline,
+#taskModal #studyDate,
+#scheduleModal #scheduleDate {
+    width: min(100%, 18ch);
+}
+
+#taskModal #studyTime {
+    width: min(100%, 9ch);
+}
+
+#taskModal #priority {
+    width: min(100%, 14ch);
+}
+
+#scheduleModal #scheduleStartTime,
+#scheduleModal #scheduleEndTime {
+    width: min(100%, 12ch);
+}
+
+#taskModal #taskGroupId,
+#scheduleModal #scheduleGroupId,
+#scheduleModal #scheduleMemo {
+    width: 100%;
+}
+
 #scheduleModal textarea {
     height: 120px;
     resize: vertical;

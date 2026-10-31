@@ -221,6 +221,12 @@
 
     <input type="text" id="taskTitle" placeholder="課題名を入力">
 
+    <label for="taskGroupId">保存先グループ</label>
+
+    <select id="taskGroupId" required>
+      <option value="">グループを読み込み中...</option>
+    </select>
+
 
 
     <label>
@@ -306,6 +312,12 @@
 
     <input type="text" id="scheduleTitle" placeholder="予定名を入力">
 
+    <label for="scheduleGroupId">保存先グループ</label>
+
+    <select id="scheduleGroupId" required>
+      <option value="">グループを読み込み中...</option>
+    </select>
+
 
     <label>
 
@@ -357,6 +369,8 @@
 
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.18/index.global.min.js"></script>
     <script src="js/calendar.js"></script>
+    <script src="js/event-creation.js"></script>
+    <script src="js/event-duplicates.js"></script>
     <script src="js/task.js"></script>
     <script src="js/schedule.js"></script>
   <script src="js/common-auth.js"></script>
