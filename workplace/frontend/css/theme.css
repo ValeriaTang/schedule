@@ -186,7 +186,8 @@
   background: var(--surface-raised);
 }
 
-:root[data-theme="dark"] .event-list-sort {
+:root[data-theme="dark"] .event-list-sort,
+:root[data-theme="dark"] .event-list-priority {
   border-color: var(--border-color);
   background: var(--field-bg);
   color: var(--text-primary);
