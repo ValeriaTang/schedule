@@ -492,7 +492,7 @@ export const GroupController = {
   },
 
   // グループの共有イベント作成
-  async createEvent(c: Context<Env>) {
+  async createEvent(c: Context<Env>, data: CreateEventInput) {
     const userId = getUserId(c)
     const groupId = Number(c.req.param('id'))
 
