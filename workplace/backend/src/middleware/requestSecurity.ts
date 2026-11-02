@@ -39,7 +39,12 @@ export function createOriginGuard(allowedOrigins: readonly string[]): Middleware
 export const requireJsonContentType: MiddlewareHandler = async (c, next) => {
   const contentType = c.req.header('Content-Type')
 
-  // Content-Typeヘッダーがない場合はスキップ（各ハンドラで個別に処理）
+  // State-changing リクエストでは Content-Type が必須
+  if (stateChangingMethods.has(c.req.method) && !contentType) {
+    return c.json({ error: 'Content-Typeはapplication/jsonである必要があります' }, 415)
+  }
+
+  // Content-Typeヘッダーがない場合はスキップ（GET 等）
   if (!contentType) {
     await next()
     return

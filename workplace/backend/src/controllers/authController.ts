@@ -5,7 +5,7 @@ import { sign } from 'hono/jwt'
 import { sql } from '../config/db'
 import { UserModel } from '../models/userModel'
 import { AuditLogModel } from '../models/auditLogModel'
-import { createProfileAvatar, isGeneratedProfileAvatar } from '../utils/profileAvatar'
+import { createProfileAvatar, isGeneratedProfileAvatar, encryptToken } from '../utils/profileAvatar'
 
 const googleClient = new OAuth2Client(
   process.env.GOOGLE_CLIENT_ID,
@@ -108,10 +108,10 @@ export const AuthController = {
         user = updatedUser
       }
 
-      // 4. API連携用トークンを DB に格納
+      // 4. API連携用トークンを暗号化して DB に格納 (R11)
       await UserModel.updateGoogleTokens(user.id, {
-        accessToken: tokens.access_token || null,
-        refreshToken: tokens.refresh_token || null,
+        accessToken: encryptToken(tokens.access_token || ''),
+        refreshToken: encryptToken(tokens.refresh_token || ''),
         expiryDate: tokens.expiry_date || null,
       })
 

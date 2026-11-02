@@ -3,7 +3,7 @@ import { Env } from '../types/hono'
 import { AuthController } from '../controllers/authController'
 import { authCheck, rejectDemoAccess } from '../middleware/authMiddleware'
 import { requireJsonContentType } from '../middleware/requestSecurity'
-import { googleAuthRateLimit } from '../middleware/rateLimit'
+import { googleAuthRateLimit, loginRateLimit } from '../middleware/rateLimit'
 import { requireLoginOriginGuard } from '../middleware/authSecurity'
 
 export const authRoutes = new Hono<Env>()
@@ -11,7 +11,9 @@ export const authRoutes = new Hono<Env>()
 // Google 認可コード (code) によるログイン
 authRoutes.post(
   '/google',
+  loginRateLimit,
   googleAuthRateLimit,
+  requireLoginOriginGuard,
   requireLoginOriginGuard,
   requireJsonContentType,
   async (c) => {
