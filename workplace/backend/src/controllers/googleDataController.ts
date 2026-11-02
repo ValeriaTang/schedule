@@ -199,6 +199,7 @@ export const GoogleDataController = {
         coursework.push(...results.flat())
       }
 
+      c.header('Cache-Control', 'no-store')
       return {
         coursework: coursework.filter((item) =>
           createdThisAcademicYear(item.creationTime, academicYear.start, academicYear.end)
@@ -245,6 +246,7 @@ export const GoogleDataController = {
         pageToken = result.nextPageToken
       } while (pageToken && events.length < 1000)
 
+      c.header('Cache-Control', 'no-store')
       return {
         events: events.filter((event) =>
           createdThisAcademicYear(event.created, academicYear.start, academicYear.end)
