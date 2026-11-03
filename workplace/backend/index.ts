@@ -33,7 +33,6 @@ const allowedOrigins = getAllowedOrigins()
 app.use(
   '/api/*',
   requireJsonContentType,
-  createOriginGuard(allowedOrigins),
   cors({
     origin: (origin) => {
       if (origin && allowedOrigins.includes(origin)) {
@@ -44,7 +43,12 @@ app.use(
     credentials: true,
     allowMethods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
     allowHeaders: ['Content-Type', 'Authorization'],
+    // f8: CORS プレフライト最大有効時間（ブラウザキャッシュ最適化）
+    maxAge: 86400,
+    // f9: 認証情報付きリクエストで露出するヘッダー
+    exposeHeaders: ['Authorization'],
   }),
+  createOriginGuard(allowedOrigins),
   apiWriteRateLimit,
   bodySizeLimit()
 )
