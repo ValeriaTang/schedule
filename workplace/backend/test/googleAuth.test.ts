@@ -70,9 +70,10 @@ AuditLogModel.createFromContext = async (c: any, userId: number, eventType: stri
 process.env.JWT_SECRET = 'test-secret-key-for-testing-32chars-minimum-length'
 
 function createApp() {
-  const store = new MemoryStore()
-  const loginRateLimit = createRequestRateLimiter('login', 5, 60 * 1000, store)
-  const googleAuthRateLimit = createRequestRateLimiter('google-auth', 20, 15 * 60 * 1000, store)
+  const loginStore = new MemoryStore()
+  const googleStore = new MemoryStore()
+  const loginRateLimit = createRequestRateLimiter('login', 5, 60 * 1000, loginStore)
+  const googleAuthRateLimit = createRequestRateLimiter('google-auth', 20, 15 * 60 * 1000, googleStore)
 
   const app = new Hono()
   app.use('*', requireJsonContentType)
