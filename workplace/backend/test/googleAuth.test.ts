@@ -1,13 +1,12 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import { Hono } from 'hono'
-import { createRequestRateLimiter } from '../src/middleware/rateLimit'
+import { createRequire } from 'module'
 import { MemoryStore } from 'hono-rate-limiter'
+import { createRequestRateLimiter } from '../src/middleware/rateLimit'
+import { requireLoginOriginGuard } from '../src/middleware/authSecurity'
 
-const mockStore = new MemoryStore()
-
-const mockGoogleAuthRateLimit = createRequestRateLimiter('google-auth', 20, 15 * 60 * 1000, mockStore)
-const mockLoginRateLimit = createRequestRateLimiter('login', 5, 60 * 1000, mockStore)
+const require = createRequire(import.meta.url)
 
 const ga = require('google-auth-library')
 const mockOAuth2Client = class {
@@ -34,7 +33,6 @@ delete require.cache[require.resolve('../src/controllers/authController')]
 const { AuthController } = require('../src/controllers/authController')
 
 import { requireJsonContentType } from '../src/middleware/requestSecurity'
-import { loginRateLimit, googleAuthRateLimit } from '../src/middleware/rateLimit'
 
 import { UserModel } from '../src/models/userModel'
 import { AuditLogModel } from '../src/models/auditLogModel'
@@ -71,10 +69,14 @@ AuditLogModel.createFromContext = async (c: any, userId: number, eventType: stri
 
 process.env.JWT_SECRET = 'test-secret-key-for-testing-32chars-minimum-length'
 
-async function createApp() {
+function createApp() {
+  const store = new MemoryStore()
+  const loginRateLimit = createRequestRateLimiter('login', 5, 60 * 1000, store)
+  const googleAuthRateLimit = createRequestRateLimiter('google-auth', 20, 15 * 60 * 1000, store)
+
   const app = new Hono()
   app.use('*', requireJsonContentType)
-  app.post('/auth/google', mockLoginRateLimit, mockGoogleAuthRateLimit, async (c) => {
+  app.post('/auth/google', loginRateLimit, googleAuthRateLimit, requireLoginOriginGuard, async (c) => {
     const body = await c.req.json().catch(() => ({}))
     const code = body.code
     if (!code) return c.json({ error: '認可コード (code) が必要です' }, 400)
@@ -83,10 +85,10 @@ async function createApp() {
   return app
 }
 
-test.beforeEach(() => { mockStore.reset(); mockUsers.clear(); nextUserId = 1 })
+test.beforeEach(() => { mockUsers.clear(); nextUserId = 1 })
 
 test('Google login valid code', async () => {
-  const app = await createApp()
+  const app = createApp()
   const res = await app.request('/auth/google', {
     method: 'POST', headers: { Origin: 'https://schedule-sai.vercel.app', 'Content-Type': 'application/json' },
     body: JSON.stringify({ code: 'valid-code' }),
@@ -100,7 +102,7 @@ test('Google login valid code', async () => {
 })
 
 test('Google login invalid code', async () => {
-  const app = await createApp()
+  const app = createApp()
   const res = await app.request('/auth/google', {
     method: 'POST', headers: { Origin: 'https://schedule-sai.vercel.app', 'Content-Type': 'application/json' },
     body: JSON.stringify({ code: 'invalid-code' }),
@@ -109,7 +111,7 @@ test('Google login invalid code', async () => {
 })
 
 test('Google login missing code', async () => {
-  const app = await createApp()
+  const app = createApp()
   const res = await app.request('/auth/google', {
     method: 'POST', headers: { Origin: 'https://schedule-sai.vercel.app', 'Content-Type': 'application/json' },
     body: JSON.stringify({}),
@@ -118,7 +120,7 @@ test('Google login missing code', async () => {
 })
 
 test('Google login rejects disallowed origin', async () => {
-  const app = await createApp()
+  const app = createApp()
   const res = await app.request('/auth/google', {
     method: 'POST', headers: { Origin: 'http://localhost:8765', 'Content-Type': 'application/json' },
     body: JSON.stringify({ code: 'valid-code' }),
@@ -127,7 +129,7 @@ test('Google login rejects disallowed origin', async () => {
 })
 
 test('Rate limit: 5 ok then 429', async () => {
-  const app = await createApp()
+  const app = createApp()
   for (let i = 0; i < 6; i++) {
     const res = await app.request('/auth/google', {
       method: 'POST', headers: { Origin: 'https://schedule-sai.vercel.app', 'Content-Type': 'application/json' },
