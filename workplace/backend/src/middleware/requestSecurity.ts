@@ -24,24 +24,24 @@ export function getAllowedOrigins(environment = process.env.NODE_ENV): string[] 
 export function createOriginGuard(allowedOrigins: readonly string[]): MiddlewareHandler {
   return async (c, next) => {
     const origin = c.req.header('Origin')
-    
+
     // OPTIONS (preflight) requests should pass through - CORS middleware handles them
     if (c.req.method === 'OPTIONS') {
       await next()
       return
     }
-    
+
     // Reject missing Origin for state-changing methods (security best practice)
     if (stateChangingMethods.has(c.req.method) && !origin) {
       return c.json({ error: '許可されていないOriginからのリクエストです' }, 403)
     }
-    
+
     if (origin) {
       if (!allowedOrigins.includes(origin)) {
         return c.json({ error: '許可されていないOriginからのリクエストです' }, 403)
       }
     }
-    
+
     await next()
   }
 }

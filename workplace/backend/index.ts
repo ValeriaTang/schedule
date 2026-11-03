@@ -1,5 +1,10 @@
-import 'dotenv/config'
 import { Hono } from 'hono'
+
+// dotenv はローカル開発時のみ読み込み（Vercel では環境変数が直接提供される）
+if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  require('dotenv/config')
+}
 import { serve } from '@hono/node-server'
 import { secureHeaders } from 'hono/secure-headers'
 import { cors } from 'hono/cors'
