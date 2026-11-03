@@ -22,10 +22,10 @@ function initGoogleAuth() {
       'openid',
       'email',
       'profile',
-      // 読み取り専用スコープのみを要求（管理権限は除外）
+      // ユーザー指定の3つのスコープ（そのまま使用）
       'https://www.googleapis.com/auth/calendar.events.readonly',
-      'https://www.googleapis.com/auth/classroom.courses.readonly',
-      'https://www.googleapis.com/auth/classroom.coursework.readonly',
+      'https://www.googleapis.com/auth/userinfo.profile',
+      'https://www.googleapis.com/auth/classroom.course-work.readonly',
     ].join(' '),
 
     // 👇 ポップアップモードに戻す
