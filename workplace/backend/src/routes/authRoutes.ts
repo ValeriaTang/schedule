@@ -18,9 +18,9 @@ authRoutes.get(
   googleAuthRateLimit,
   async (c) => {
     // GoogleのOAuth2承認URLを構築
-    const redirectUri = (c.env as any).FRONTEND_URL
-      ? `${(c.env as any).FRONTEND_URL}/api/auth/google/callback`
-      : 'https://schedule-backend-navy.vercel.app/api/auth/google/callback'
+    // リダイレクトURIはBACKEND_URLを使用（Googleのコールバックエンドポイント）
+    const backendUrl = (c.env as any).BACKEND_URL || 'https://schedule-backend-navy.vercel.app'
+    const redirectUri = `${backendUrl}/api/auth/google/callback`
 
     const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth')
     authUrl.searchParams.set('client_id', process.env.GOOGLE_CLIENT_ID || '')
@@ -68,7 +68,7 @@ authRoutes.get(
     // Googleからエラーが返された場合
     if (error) {
       console.error('Google OAuth error:', error)
-      const frontendUrl = (c.env as any).FRONTEND_URL || 'https://schedule-backend-navy.vercel.app'
+      const frontendUrl = (c.env as any).FRONTEND_URL || 'https://schedule-sai.vercel.app'
       return c.redirect(`${frontendUrl}/login.html?error=${encodeURIComponent(error)}`)
     }
 
