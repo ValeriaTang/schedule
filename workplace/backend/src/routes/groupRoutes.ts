@@ -6,20 +6,21 @@ import { createGroupSchema } from '../validators/groupValidators'
 import { createEventSchema } from '../validators/eventValidators'
 import { GroupChatController } from '../controllers/groupChatController'
 import { requireJsonContentType } from '../middleware/requestSecurity'
+import { rejectDemoWrite, rejectDemoReadSensitive } from '../middleware/demoGuard'
 import { groupInviteCodeRateLimit } from '../middleware/rateLimit'
 import { apiWriteRateLimit } from '../middleware/rateLimit'
 
 const groupRoutes = new Hono<Env>()
 
 groupRoutes.get('/', authCheck, (c) => GroupController.list(c))
-groupRoutes.post('/', requireJsonContentType, authCheck, rejectDemoAccess, (c) => GroupController.create(c))
-groupRoutes.post('/join', groupInviteCodeRateLimit, requireJsonContentType, authCheck, rejectDemoAccess, (c) => GroupController.join(c))
-groupRoutes.get('/:id/messages', authCheck, (c) => GroupChatController.list(c))
-groupRoutes.post('/:id/messages', requireJsonContentType, authCheck, rejectDemoAccess, (c) => GroupChatController.create(c))
-groupRoutes.delete('/:id/leave', authCheck, rejectDemoAccess, (c) => GroupController.leave(c))
-groupRoutes.get('/:id', authCheck, rejectDemoAccess, (c) => GroupController.detail(c))
-groupRoutes.get('/:id/events', authCheck, rejectDemoAccess, (c) => GroupController.listEvents(c))
-groupRoutes.post('/:id/events', requireJsonContentType, authCheck, rejectDemoAccess, async (c) => {
+groupRoutes.post('/', requireJsonContentType, authCheck, rejectDemoWrite, (c) => GroupController.create(c))
+groupRoutes.post('/join', groupInviteCodeRateLimit, requireJsonContentType, authCheck, rejectDemoWrite, (c) => GroupController.join(c))
+groupRoutes.get('/:id/messages', authCheck, rejectDemoReadSensitive, (c) => GroupChatController.list(c))
+groupRoutes.post('/:id/messages', requireJsonContentType, authCheck, rejectDemoWrite, (c) => GroupChatController.create(c))
+groupRoutes.delete('/:id/leave', authCheck, rejectDemoWrite, (c) => GroupController.leave(c))
+groupRoutes.get('/:id', authCheck, rejectDemoReadSensitive, (c) => GroupController.detail(c))
+groupRoutes.get('/:id/events', authCheck, rejectDemoReadSensitive, (c) => GroupController.listEvents(c))
+groupRoutes.post('/:id/events', requireJsonContentType, authCheck, rejectDemoWrite, async (c) => {
   const body = await c.req.json().catch(() => ({}))
   const result = createEventSchema.safeParse(body)
 
@@ -31,8 +32,8 @@ groupRoutes.post('/:id/events', requireJsonContentType, authCheck, rejectDemoAcc
   return GroupController.createEvent(c, result.data)
 })
 // 招待コード再発行（管理者のみ）
-groupRoutes.post('/:id/invite-code/rotate', requireJsonContentType, authCheck, rejectDemoAccess, (c) => GroupController.rotateInviteCode(c))
+groupRoutes.post('/:id/invite-code/rotate', requireJsonContentType, authCheck, rejectDemoWrite, (c) => GroupController.rotateInviteCode(c))
 // メンバー削除（管理者のみ）
-groupRoutes.delete('/:id/members/:memberId', authCheck, rejectDemoAccess, (c) => GroupController.removeMember(c, Number(c.req.param('memberId'))))
+groupRoutes.delete('/:id/members/:memberId', authCheck, rejectDemoWrite, (c) => GroupController.removeMember(c, Number(c.req.param('memberId'))))
 
 export default groupRoutes

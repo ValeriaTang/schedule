@@ -15,7 +15,6 @@ authRoutes.post(
   loginRateLimit,
   googleAuthRateLimit,
   requireLoginOriginGuard,
-  requireLoginOriginGuard,
   requireJsonContentType,
   async (c) => {
     const body = await c.req.json().catch(() => ({}))
