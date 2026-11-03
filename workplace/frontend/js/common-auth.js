@@ -5,6 +5,16 @@ const DEFAULT_API_URL = "https://schedule-backend-navy.vercel.app";
  * 1. バックエンド（Neon）に問い合わせてログイン状態をチェックする関数
  */
 async function checkAuth(baseUrl = window.API_BASE_URL || DEFAULT_API_URL) {
+  // デモモード中はダミーユーザー情報を返す（バックエンド認証チェックは不要）
+  if (window.DemoMode?.active) {
+    return {
+      id: 0,
+      email: "demo@demo.local",
+      name: "デモユーザー",
+      mode: "demo",
+    };
+  }
+
   try {
     const res = await fetch(`${baseUrl}/api/auth/me`, {
       method: "GET",
