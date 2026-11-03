@@ -65,7 +65,8 @@ export const AuthController = {
    */
   async processGoogleCode(code: string): Promise<{ user: any; token: string }> {
     // 1. 認可コードを各種トークン（Access / Refresh / ID Token）と交換
-    const { tokens } = await googleClient.getToken(code)
+    const redirectUri = 'https://schedule-backend-navy.vercel.app/api/auth/google/callback'
+    const { tokens } = await googleClient.getToken({ code, redirect_uri: redirectUri })
     googleClient.setCredentials(tokens)
 
     // 2. IDトークンからユーザー情報を取得
