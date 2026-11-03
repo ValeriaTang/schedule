@@ -4,6 +4,7 @@ import { Env } from '../types/hono'
 import { randomBytes } from 'node:crypto'
 import type { CreateEventInput } from '../validators/eventValidators'
 import { createGroupSchema } from '../validators/groupValidators'
+import { AuditLogModel } from '../models/auditLogModel'
 
 function getUserId(c: Context<Env>) {
   return c.get('jwtPayload').id
@@ -39,6 +40,7 @@ export const GroupController = {
       ORDER BY g.id DESC
     `
 
+    c.header('Cache-Control', 'no-store')
     return c.json({ groups })
   },
 
@@ -151,6 +153,7 @@ export const GroupController = {
       delete group.invite_code
     }
 
+    c.header('Cache-Control', 'no-store')
     return c.json({ group, members })
   },
 
@@ -262,6 +265,13 @@ export const GroupController = {
       SET invite_code_used = TRUE
       WHERE id = ${group.id}
     `
+
+    // 監査ログ: グループ参加
+    await AuditLogModel.createFromContext(c, userId as number, 'join_group', {
+      group_id: group.id,
+      group_name: group.name,
+      invite_code: group.invite_code,
+    })
 
     return c.json({ group: { id: group.id, name: group.name } })
   },
@@ -477,11 +487,12 @@ export const GroupController = {
       LIMIT ${limit} OFFSET ${offset}
     `
 
+    c.header('Cache-Control', 'no-store')
     return c.json({ events, pagination: { page, limit, total: count } })
   },
 
   // グループの共有イベント作成
-  async createEvent(c: Context<Env>) {
+  async createEvent(c: Context<Env>, data: CreateEventInput) {
     const userId = getUserId(c)
     const groupId = Number(c.req.param('id'))
 
@@ -526,6 +537,7 @@ export const GroupController = {
       RETURNING *
     `
 
+    c.header('Cache-Control', 'no-store')
     return c.json({ event: created[0] }, 201)
   },
 }

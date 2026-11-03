@@ -4,7 +4,8 @@ import { setCookie, deleteCookie } from 'hono/cookie'
 import { sign } from 'hono/jwt'
 import { sql } from '../config/db'
 import { UserModel } from '../models/userModel'
-import { createProfileAvatar, isGeneratedProfileAvatar } from '../utils/profileAvatar'
+import { AuditLogModel } from '../models/auditLogModel'
+import { createProfileAvatar, isGeneratedProfileAvatar, encryptToken } from '../utils/profileAvatar'
 
 const googleClient = new OAuth2Client(
   process.env.GOOGLE_CLIENT_ID,
@@ -107,10 +108,10 @@ export const AuthController = {
         user = updatedUser
       }
 
-      // 4. API連携用トークンを DB に格納
+      // 4. API連携用トークンを暗号化して DB に格納 (R11)
       await UserModel.updateGoogleTokens(user.id, {
-        accessToken: tokens.access_token || null,
-        refreshToken: tokens.refresh_token || null,
+        accessToken: encryptToken(tokens.access_token || ''),
+        refreshToken: encryptToken(tokens.refresh_token || ''),
         expiryDate: tokens.expiry_date || null,
       })
 
@@ -129,6 +130,12 @@ export const AuthController = {
         },
         getJwtSecret()
       )
+
+      // 監査ログ: ログイン成功
+      await AuditLogModel.createFromContext(c, user.id, 'login', {
+        method: 'google',
+        user_email: user.email,
+      })
 
       setCookie(c, 'token', token, {
         httpOnly: true,
@@ -167,6 +174,7 @@ export const AuthController = {
       return c.json({ error: 'ユーザーが見つかりません' }, 404)
     }
 
+    c.header('Cache-Control', 'no-store')
     return c.json({
       user: {
         id: user.id,
@@ -208,6 +216,13 @@ export const AuthController = {
     if (user.length === 0) {
       return c.json({ error: 'ユーザーが見つかりません' }, 404)
     }
+
+    // 監査ログ: アカウント削除前の状態記録
+    const [userRow] = await sql`SELECT email, name FROM users WHERE id = ${userId}`
+    await AuditLogModel.createFromContext(c, userId as number, 'delete_account', {
+      deleted_email: userRow?.email,
+      deleted_name: userRow?.name,
+    })
 
     await sql.transaction([
       sql`
@@ -288,6 +303,11 @@ export const AuthController = {
     if (payload.tokenVersion === undefined) {
       return c.json({ error: '無効なトークンです' }, 401)
     }
+
+    // 監査ログ: ログアウト
+    await AuditLogModel.createFromContext(c, payload.id as number, 'logout', {
+      user_email: payload.email,
+    })
 
     // トークン世代を increment して古い JWT を無効化
     const updatedVersion = await UserModel.incrementTokenVersion(payload.id as number)

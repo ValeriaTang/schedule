@@ -1,5 +1,5 @@
 // APIベースURL（本番環境用）
-const API_BASE_URL = "https://schedule-backend-navy.vercel.app"\;
+const API_BASE_URL = "https://schedule-backend-navy.vercel.app";
 
 let codeClient;
 const selectAccount = new URLSearchParams(window.location.search).get('select_account') === 'true';

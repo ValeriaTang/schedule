@@ -411,14 +411,25 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (!calendarScriptPromise) {
       calendarMessage.textContent = "カレンダーを読み込んでいます...";
       const scripts = [
-        "all/global.js",
-        "themes/monarch/global.js",
-        "locales/ja/global.js",
+        {
+          path: "all/global.js",
+          integrity: "sha384-mVUtG2TvolUSuFldYiRcYWx4EHK1XgqlFIyLMUf5alrN7/tdAzdvIbTnYQofzRSi"
+        },
+        {
+          path: "themes/monarch/global.js",
+          integrity: "sha384-eTZ1xQ830zvJLg5lC7bt4us60RagYcwVxE+8kcMNKWHv4wZZoBQ+rPpaQhACxYS1"
+        },
+        {
+          path: "locales/ja/global.js",
+          integrity: "sha384-mlBKD6Y1rhEpQrhyI2CYYFmIFsCxdGUL0lkz4oC92JshGhg7fhLckwAmegHErdA+"
+        },
       ];
       calendarScriptPromise = scripts.reduce(
-        (previous, path) => previous.then(() => new Promise((resolve, reject) => {
+        (previous, { path, integrity }) => previous.then(() => new Promise((resolve, reject) => {
           const script = document.createElement("script");
           script.src = `https://cdn.jsdelivr.net/npm/fullcalendar@7.1.2/${path}`;
+          script.integrity = integrity;
+          script.crossOrigin = "anonymous";
           script.onload = resolve;
           script.onerror = () => reject(new Error("カレンダーを読み込めませんでした。通信環境を確認してください。"));
           document.head.appendChild(script);

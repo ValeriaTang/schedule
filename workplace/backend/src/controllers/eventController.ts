@@ -104,7 +104,8 @@ export const EventController = {
         LIMIT ${limit} OFFSET ${offset}
       `
 
-      return c.json({ events, pagination: { page, limit, total: count } }, 200)
+      c.header('Cache-Control', 'no-store')
+    return c.json({ events, pagination: { page, limit, total: count } }, 200)
     } catch (err) {
       console.error('[EventController.getByGroup Error]:', err)
       return c.json({ error: '予定の取得に失敗しました' }, 500)

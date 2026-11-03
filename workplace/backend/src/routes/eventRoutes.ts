@@ -1,6 +1,7 @@
 import { Hono } from 'hono'
 import { Env } from '../types/hono'
-import { authCheck, rejectDemoAccess } from '../middleware/authMiddleware'
+import { authCheck } from '../middleware/authMiddleware'
+import { rejectDemoWrite, rejectDemoReadSensitive } from '../middleware/demoGuard'
 import { EventController } from '../controllers/eventController'
 import { createEventSchema, updateEventSchema } from '../validators/eventValidators'
 import { requireJsonContentType } from '../middleware/requestSecurity'
@@ -8,10 +9,10 @@ import { requireJsonContentType } from '../middleware/requestSecurity'
 const eventRoutes = new Hono<Env>()
 
 // GET  /api/events/
-eventRoutes.get('/', authCheck, EventController.getByGroup)
+eventRoutes.get('/', authCheck, rejectDemoReadSensitive, EventController.getByGroup)
 
 // POST /api/events/
-eventRoutes.post('/', requireJsonContentType, authCheck, rejectDemoAccess, async (c) => {
+eventRoutes.post('/', requireJsonContentType, authCheck, rejectDemoWrite, async (c) => {
   const body = await c.req.json().catch(() => ({}))
   const result = createEventSchema.safeParse(body)
 
@@ -24,7 +25,7 @@ eventRoutes.post('/', requireJsonContentType, authCheck, rejectDemoAccess, async
 })
 
 // PUT /api/events/:id  <-- 追加
-eventRoutes.put('/:id', requireJsonContentType, authCheck, rejectDemoAccess, async (c) => {
+eventRoutes.put('/:id', requireJsonContentType, authCheck, rejectDemoWrite, async (c) => {
   const body = await c.req.json().catch(() => ({}))
   const result = updateEventSchema.safeParse(body)
 
@@ -37,6 +38,6 @@ eventRoutes.put('/:id', requireJsonContentType, authCheck, rejectDemoAccess, asy
 })
 
 // DELETE /api/events/:id
-eventRoutes.delete('/:id', authCheck, rejectDemoAccess, EventController.delete)
+eventRoutes.delete('/:id', authCheck, rejectDemoWrite, EventController.delete)
 
 export default eventRoutes
