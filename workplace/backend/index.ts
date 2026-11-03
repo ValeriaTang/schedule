@@ -32,7 +32,6 @@ const allowedOrigins = getAllowedOrigins()
 
 app.use(
   '/api/*',
-  requireJsonContentType,
   cors({
     origin: (origin) => {
       if (origin && allowedOrigins.includes(origin)) {
@@ -50,7 +49,8 @@ app.use(
   }),
   createOriginGuard(allowedOrigins),
   apiWriteRateLimit,
-  bodySizeLimit()
+  bodySizeLimit(),
+  requireJsonContentType
 )
 
 // 3. エラーハンドラ
