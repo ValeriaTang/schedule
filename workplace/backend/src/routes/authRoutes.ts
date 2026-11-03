@@ -87,7 +87,7 @@ authRoutes.get(
       setCookie(c, 'token', token, {
         httpOnly: true,
         secure: true,
-        sameSite: 'Lax',
+        sameSite: 'None',
         path: '/',
         maxAge: 60 * 60 * 24,
       })
