@@ -264,6 +264,18 @@
     const method = (init.method || (input instanceof Request ? input.method : "GET")).toUpperCase();
     const pathname = requestUrl.pathname;
 
+    // /api/auth/me をデモモードで処理
+    if (pathname === "/api/auth/me" && method === "GET") {
+      return jsonResponse({
+        user: {
+          id: user?.id || 0,
+          email: user?.email || "demo@demo.local",
+          name: user?.name || "デモユーザー",
+          mode: "demo",
+        }
+      });
+    }
+
     if (pathname === "/api/events" && method === "POST") {
       try {
         const event = addMemoryEvent(await requestBody(input, init));
@@ -558,10 +570,10 @@
             ? error.message
             : "デモを終了できませんでした。通信環境を確認してください。";
         }
+      } finally {
         if (button) button.disabled = false;
-        return;
+        restoreGroupSelection();
       }
-      restoreGroupSelection();
     });
   });
 })();
