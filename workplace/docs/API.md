@@ -6,7 +6,7 @@
 - JSON本文を受け取るAPIは `Content-Type: application/json` が必要です。それ以外は `415` を返します。
 - 本番環境で許可されるOriginは `https://schedule-sai.vercel.app` のみです。localhostのOriginは開発環境でのみ許可されます。
 - `POST /api/auth/logout` はログイン中ユーザーのトークン世代を更新し、発行済みJWTをすべて失効させます。ログアウト後は再ログインが必要です。
-- ログインは20回/15分、デモセッション発行と招待コード照合は各30回/15分、その他の状態変更APIは100回/分までです。超過時は `429` を返します。
+- ログインは20回/15分、デモセッション発行と招待コード照合は各30回/15分、その他の状態変更APIは100回/分までです。超過時は `429` を返します。レートリミット状態は DB 内の `api_rate_limit_buckets` テーブル（`reset_at` インデックス適用）により管理されます。
 
 ## 認証API
 
@@ -29,26 +29,95 @@ Google連携機能を使うには、Google Cloud ConsoleでClassroom APIとCalen
 - `DELETE /api/events/:id`: イベント削除
 
 ## グループ API
+
 - `GET /api/groups`
-  - 概要: ログインユーザーが所属するグループの一覧を取得する
+  - 概要: ログインユーザーが所属するグループの一覧および各グループでの役職（`role`）、設定カラー（`color`）を取得する
+  - レスポンス例:
+    ```json
+    {
+      "groups": [
+        {
+          "id": 1,
+          "group_name": "Web開発チーム",
+          "color": "#3b82f6",
+          "invite_code": "X8K2P9",
+          "role": "admin"
+        }
+      ]
+    }
+    ```
 - `POST /api/groups`
-  - 概要: 新規グループを作成する
-  - リクエストボディ: `{ "name": "グループ名" }`
+  - 概要: 新規グループを作成する（作成ユーザーには自動的に `admin` 権限が付与されます）
+  - リクエストボディ: `{ "groupName": "新グループ名", "color": "#3b82f6" }`（`color` 省略時は `#3b82f6` が自動適用）
+  - レスポンス例 (`201 Created`):
+    ```json
+    {
+      "group": {
+        "id": 2,
+        "group_name": "新グループ名",
+        "color": "#3b82f6",
+        "invite_code": "A9B8C7"
+      }
+    }
+    ```
 - `GET /api/groups/:id`
-  - 概要: 特定のグループの詳細情報（メンバー一覧など）を取得する
-- `POST /api/groups/join` または `POST /api/groups/:id/join`
-  - 概要: 招待コードやIDを使ってグループに参加する。すでに参加済みの場合は `409` を返す
+  - 概要: 特定のグループの詳細情報（グループ名・カラー・招待コード）および所属メンバー一覧を取得する
+- `PUT /api/groups/:id`
+  - 概要: グループの名称およびテーマカラーを変更する（**`admin` または `owner` 権限を持つユーザーのみ実行可能**）
+  - リクエストボディ: `{ "groupName": "更新後のグループ名", "color": "#ef4444" }`
+  - レスポンス例 (`200 OK`):
+    ```json
+    {
+      "message": "グループ情報を更新しました",
+      "group": {
+        "id": 2,
+        "group_name": "更新後のグループ名",
+        "color": "#ef4444",
+        "invite_code": "A9B8C7"
+      }
+    }
+    ```
+  - エラーレスポンス (`403 Forbidden`):
+    ```json
+    {
+      "error": "グループ情報の編集権限がありません（管理者のみ変更可能）"
+    }
+    ```
+- `POST /api/groups/join`
+  - 概要: 招待コードを使ってグループに参加する（デフォルト役職: `member`）。すでに参加済みの場合は `409` を返す
+  - リクエストボディ: `{ "inviteCode": "A9B8C7" }`
 - `DELETE /api/groups/:id/leave`
-  - 概要: ログインユーザーがグループから脱退する。最後のメンバーの場合はグループと共有予定も削除する
+  - 概要: ログインユーザーがグループから脱退する。管理者が脱退する場合は他のメンバーへ自動で権限を引き継ぐ。最後のメンバーの場合はグループおよび関連する共有予定・メッセージも削除する
 
 グループAPIを使う前に、`workplace/backend/migrations/20261030_reconcile_groups_schema.sql` を
-NeonのSQL Editorで実行してください。`groups.name` と `groups.created_by` 列を追加し、
-既存の `group_name` 列があればグループ名へ引き継ぎます。名前がない既存グループには
+NeonのSQL Editorで実行してください。`groups.group_name` と `groups.color` 列を追加し、
+既存の `name` 列があればグループ名へ引き継ぎます。名前がない既存グループには
 `グループ <ID>` を設定し、作成者が未設定の場合は管理者、または最初のメンバーを設定します。
 このマイグレーションは再実行できます。
 
 ## グループ内共有イベント API
+
 - `GET /api/groups/:id/events`
-  - 概要: 指定したグループ内で共有されているイベント一覧を取得する
+  - 概要: 指定したグループ内で共有されているイベント一覧を取得する。各イベントにはグループのカラー（`group_color`）および自動適用カラー（`display_color`: 個別指定色があれば優先、無ければグループカラー）が含まれます。
+  - レスポンス例:
+    ```json
+    {
+      "events": [
+        {
+          "id": 10,
+          "group_id": 2,
+          "title": "課題提出期限",
+          "description": "[課題] 優先度:高",
+          "start_time": "2026-11-10T10:00:00Z",
+          "end_time": "2026-11-10T11:00:00Z",
+          "subject_color": null,
+          "group_color": "#ef4444",
+          "display_color": "#ef4444",
+          "creator_name": "山田太郎",
+          "editor_name": "山田太郎"
+        }
+      ]
+    }
+    ```
 - `POST /api/groups/:id/events`
   - 概要: グループ内に新しい共有イベントを作成する
