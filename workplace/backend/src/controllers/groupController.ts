@@ -23,7 +23,7 @@ export const GroupController = {
 
     if (isDemo) {
       const groups = await sql`
-        SELECT g.id, g.group_name, g.color, gm.role
+        SELECT g.id, g.name, g.color, gm.role
         FROM groups g
         JOIN group_members gm ON gm.group_id = g.id
         WHERE gm.user_id = ${userId} AND g.is_demo = true
@@ -33,7 +33,7 @@ export const GroupController = {
     }
 
     const groups = await sql`
-      SELECT g.id, g.group_name, g.color, g.invite_code, gm.role
+      SELECT g.id, g.name, g.color, g.invite_code, gm.role
       FROM groups g
       JOIN group_members gm ON gm.group_id = g.id
       WHERE gm.user_id = ${userId}
@@ -194,10 +194,10 @@ export const GroupController = {
     const updated = await sql`
       UPDATE groups
       SET 
-        group_name = COALESCE(${groupName}, group_name),
+        name = COALESCE(${groupName}, name),
         color = COALESCE(${color}, color)
       WHERE id = ${groupId}
-      RETURNING id, group_name, color, invite_code
+      RETURNING id, name, color, invite_code
     `
 
     if (updated.length === 0) {

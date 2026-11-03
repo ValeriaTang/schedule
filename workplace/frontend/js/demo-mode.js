@@ -546,10 +546,31 @@
     else sessionStorage.removeItem(stateKey);
   });
 
-  document.addEventListener("DOMContentLoaded", () => {
+  document.addEventListener("DOMContentLoaded", async () => {
     document.body.classList.add("demo-mode");
     const badge = document.getElementById("demoModeBadge");
     if (badge) badge.hidden = false;
+
+    // デモモード中のユーザー名をバッジに表示
+    const personaNameEl = document.getElementById("demoPersonaName");
+    if (personaNameEl) {
+      try {
+        const meResponse = await nativeFetch(`${baseUrl}/api/demo/me`, {
+          method: "GET",
+          credentials: "include",
+          headers: makeHeaders(null, {}),
+        });
+        if (meResponse.ok) {
+          const meData = await meResponse.json();
+          if (meData.user?.name) {
+            personaNameEl.textContent = `（${meData.user.name}）`;
+          }
+        }
+      } catch (error) {
+        console.error("デモユーザー情報の取得に失敗しました:", error);
+      }
+    }
+
     document.getElementById("demoModeExitButton")?.addEventListener("click", async () => {
       const button = document.getElementById("demoModeExitButton");
       if (button) button.disabled = true;

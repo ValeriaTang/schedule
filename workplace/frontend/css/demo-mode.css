@@ -11,6 +11,12 @@
   white-space: nowrap;
 }
 
+.demo-badge-persona {
+  font-size: 12px;
+  opacity: 0.8;
+  white-space: nowrap;
+}
+
 :root[data-theme="dark"] .demo-mode-badge {
   border-color: var(--accent-strong);
   background: var(--accent-surface);

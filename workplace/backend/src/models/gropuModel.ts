@@ -2,7 +2,7 @@ import { sql } from '../config/db'
 
 export interface Group {
   id?: number
-  group_name: string
+  name: string
   color?: string
   invite_code?: string
   created_by?: number
@@ -12,7 +12,7 @@ export const groupModel = {
   // グループ新規作成（カラー指定対応）
   async createGroup(groupName: string, inviteCode: string, userId: number, color: string = '#3b82f6') {
     const [group] = await sql`
-      INSERT INTO groups (group_name, invite_code, created_by, color)
+      INSERT INTO groups (name, invite_code, created_by, color)
       VALUES (${groupName}, ${inviteCode}, ${userId}, ${color})
       RETURNING *
     `
@@ -60,10 +60,10 @@ export const groupModel = {
     const [group] = await sql`
       UPDATE groups
       SET 
-        group_name = COALESCE(${groupName}, group_name),
+        name = COALESCE(${groupName}, name),
         color = COALESCE(${color}, color)
       WHERE id = ${groupId}
-      RETURNING id, group_name, color, invite_code
+      RETURNING id, name, color, invite_code
     `
     return group
   },
@@ -72,7 +72,7 @@ export const groupModel = {
   async getUserGroups(userId: number, isDemo: boolean = false) {
     if (isDemo) {
       return await sql`
-        SELECT g.id, g.group_name, g.color, gm.role
+        SELECT g.id, g.name, g.color, gm.role
         FROM groups g
         JOIN group_members gm ON gm.group_id = g.id
         WHERE gm.user_id = ${userId}
@@ -81,7 +81,7 @@ export const groupModel = {
     }
 
     return await sql`
-      SELECT g.id, g.group_name, g.color, g.invite_code, gm.role
+      SELECT g.id, g.name, g.color, g.invite_code, gm.role
       FROM groups g
       JOIN group_members gm ON gm.group_id = g.id
       WHERE gm.user_id = ${userId}
