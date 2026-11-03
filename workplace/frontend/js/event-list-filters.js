@@ -9,6 +9,12 @@ window.EventListFilters = (() => {
   }
 
   async function loadMetadata() {
+    // デモモード中はダミーユーザー情報を使用（バックエンド認証チェック不要）
+    if (window.DemoMode?.active) {
+      groups = [];
+      currentUserId = 0;
+      return;
+    }
     const [groupsResponse, userResponse] = await Promise.all([
       fetch(`${apiBaseUrl()}/api/groups`, { credentials: "include" }),
       fetch(`${apiBaseUrl()}/api/auth/me`, { credentials: "include" }),

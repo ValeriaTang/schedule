@@ -288,24 +288,30 @@ window.EventActions = (() => {
 
   const ready = (async () => {
     const baseUrl = window.API_BASE_URL || "https://schedule-backend-navy.vercel.app";
-    const [userResponse, groupsResponse] = await Promise.all([
-      fetch(`${baseUrl}/api/auth/me`, { credentials: "include" }),
-      fetch(`${baseUrl}/api/groups`, { credentials: "include" }),
-    ]);
+    // デモモード中はダミーユーザー情報を使用（バックエンド認証チェック不要）
+    if (window.DemoMode?.active) {
+      currentUserId = 0;
+      groupRoles = new Map();
+    } else {
+      const [userResponse, groupsResponse] = await Promise.all([
+        fetch(`${baseUrl}/api/auth/me`, { credentials: "include" }),
+        fetch(`${baseUrl}/api/groups`, { credentials: "include" }),
+      ]);
 
-    if (!userResponse.ok || !groupsResponse.ok) {
-      throw new Error("編集権限を確認できませんでした。");
+      if (!userResponse.ok || !groupsResponse.ok) {
+        throw new Error("編集権限を確認できませんでした。");
+      }
+
+      const [userData, groupsData] = await Promise.all([
+        userResponse.json(),
+        groupsResponse.json(),
+      ]);
+      currentUserId = userData.user?.id ?? null;
+      groupRoles = new Map(
+        (Array.isArray(groupsData.groups) ? groupsData.groups : [])
+          .map((group) => [String(group.id), group.role])
+      );
     }
-
-    const [userData, groupsData] = await Promise.all([
-      userResponse.json(),
-      groupsResponse.json(),
-    ]);
-    currentUserId = userData.user?.id ?? null;
-    groupRoles = new Map(
-      (Array.isArray(groupsData.groups) ? groupsData.groups : [])
-        .map((group) => [String(group.id), group.role])
-    );
   })().catch((error) => {
     console.error("予定・課題の編集権限確認に失敗しました:", error);
   });
