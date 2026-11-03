@@ -1,5 +1,6 @@
 import { Hono } from 'hono'
 import type { Env } from '../types/hono'
+import { setCookie } from 'hono/cookie'
 import { AuthController } from '../controllers/authController'
 import { authCheck, rejectDemoAccess, rejectDemoSensitiveAccess } from '../middleware/authMiddleware'
 import { rejectDemoWrite, rejectDemoReadSensitive } from '../middleware/demoGuard'
@@ -8,6 +9,31 @@ import { googleAuthRateLimit, loginRateLimit } from '../middleware/rateLimit'
 import { requireLoginOriginGuard } from '../middleware/authSecurity'
 
 export const authRoutes = new Hono<Env>()
+
+// Google OAuth リダイレクト認証（GET方式）フロントエンドが window.location.href で遷移するためのエンドポイント
+// Googleの承認画面へリダイレクトする
+authRoutes.get(
+  '/google',
+  loginRateLimit,
+  googleAuthRateLimit,
+  async (c) => {
+    // GoogleのOAuth2承認URLを構築
+    const redirectUri = (c.env as any).FRONTEND_URL
+      ? `${(c.env as any).FRONTEND_URL}/api/auth/google/callback`
+      : 'https://schedule-backend-navy.vercel.app/api/auth/google/callback'
+
+    const authUrl = new URL('https://accounts.google.com/o/oauth2/v2/auth')
+    authUrl.searchParams.set('client_id', process.env.GOOGLE_CLIENT_ID || '')
+    authUrl.searchParams.set('redirect_uri', redirectUri)
+    authUrl.searchParams.set('response_type', 'code')
+    authUrl.searchParams.set('scope', 'openid email profile')
+    authUrl.searchParams.set('access_type', 'offline')
+    authUrl.searchParams.set('prompt', 'select_account')
+
+    // ブラウザをGoogleの承認画面へリダイレクト
+    return c.redirect(authUrl.toString())
+  }
+)
 
 // Google 認可コード (code) によるログイン（POST方式 - 既存のフロー）
 authRoutes.post(
@@ -42,7 +68,7 @@ authRoutes.get(
     // Googleからエラーが返された場合
     if (error) {
       console.error('Google OAuth error:', error)
-      const frontendUrl = (c.env as any).FRONTEND_URL || 'https://schedule-sai.vercel.app'
+      const frontendUrl = (c.env as any).FRONTEND_URL || 'https://schedule-backend-navy.vercel.app'
       return c.redirect(`${frontendUrl}/login.html?error=${encodeURIComponent(error)}`)
     }
 
@@ -54,31 +80,19 @@ authRoutes.get(
     }
 
     try {
-      // 認可コードをPOSTリクエストとして googleLogin に渡す
-      // Hono Context を作成して AuthController.googleLogin を呼び出す
-      const { AuthController } = await import('../controllers/authController.js')
+      // 認可コードを処理してJWTとユーザー情報を取得
+      const { user, token } = await AuthController.processGoogleCode(code)
 
-      // Context を模倣して googleLogin を呼び出す
-      const mockContext = {
-        ...c,
-        req: {
-          ...c.req,
-          json: async () => ({ code }),
-          method: 'POST',
-          header: (name: string) => c.req.header(name),
-          query: (name: string) => c.req.query(name),
-          param: (name: string) => c.req.param(name),
-        },
-        get: () => undefined,
-        set: () => {},
-        env: c.env as Env,
-        var: c.var,
-      } as any
+      // Cookie を設定
+      setCookie(c, 'token', token, {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'Lax',
+        path: '/',
+        maxAge: 60 * 60 * 24,
+      })
 
-      // googleLogin を呼び出してレスポンスを取得
-      await AuthController.googleLogin(mockContext)
-
-      // Cookie が設定されている場合、フロントエンドの calendar.html にリダイレクト
+      // フロントエンドの calendar.html にリダイレクト
       const frontendUrl = (c.env as any).FRONTEND_URL || 'https://schedule-sai.vercel.app'
       return c.redirect(`${frontendUrl}/calendar.html`)
     } catch (err) {

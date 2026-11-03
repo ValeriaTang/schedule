@@ -59,6 +59,78 @@ async function revokeGoogleTokens(userId: number): Promise<void> {
 }
 
 export const AuthController = {
+  /**
+   * Google 認可コードを処理し、ユーザー情報とJWTトークンを返す
+   * レスポンス送信は行わない（呼び出し側で処理）
+   */
+  async processGoogleCode(code: string): Promise<{ user: any; token: string }> {
+    // 1. 認可コードを各種トークン（Access / Refresh / ID Token）と交換
+    const { tokens } = await googleClient.getToken(code)
+    googleClient.setCredentials(tokens)
+
+    // 2. IDトークンからユーザー情報を取得
+    if (!tokens.id_token) {
+      throw new Error('IDトークンを取得できませんでした')
+    }
+
+    const ticket = await googleClient.verifyIdToken({
+      idToken: tokens.id_token,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    })
+    const payload = ticket.getPayload()
+
+    if (!payload || !payload.email || !payload.email_verified) {
+      throw new Error('未検証の Google アカウントです')
+    }
+
+    const googleId = payload.sub
+    const email = payload.email!
+    const name = payload.name || 'Google User'
+    // 3. ユーザー検索または新規登録
+    let user = await UserModel.findByGoogleId(googleId)
+    if (!user && email) {
+      user = await UserModel.findByEmail(email)
+    }
+
+    if (!user) {
+      user = await UserModel.createGoogleUser(googleId, name, email, '')
+    }
+
+    if (!isGeneratedProfileAvatar(user.picture)) {
+      const picture = createProfileAvatar(String(user.id))
+      const updatedUser = await UserModel.updatePicture(user.id, picture)
+      if (!updatedUser) {
+        throw new Error('ユーザーのプロフィール画像を保存できませんでした')
+      }
+      user = updatedUser
+    }
+
+    // 4. API連携用トークンを暗号化して DB に格納 (R11)
+    await UserModel.updateGoogleTokens(user.id, {
+      accessToken: encryptToken(tokens.access_token || ''),
+      refreshToken: encryptToken(tokens.refresh_token || ''),
+      expiryDate: tokens.expiry_date || null,
+    })
+
+    const tokenVersion = await UserModel.getTokenVersion(user.id)
+    if (tokenVersion === null) {
+      throw new Error('ユーザーのトークン世代を取得できませんでした')
+    }
+
+    // 5. アプリ内認証用 JWT の発行
+    const token = await sign(
+      {
+        id: user.id,
+        email: user.email,
+        token_version: tokenVersion,
+        exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24, // 24時間
+      },
+      getJwtSecret()
+    )
+
+    return { user, token }
+  },
+
   async googleLogin(c: AppContext) {
     try {
       const { code } = await c.req.json()
@@ -67,69 +139,7 @@ export const AuthController = {
         return c.json({ error: '認可コードが必要です' }, 400)
       }
 
-      // 1. 認可コードを各種トークン（Access / Refresh / ID Token）と交換
-      const { tokens } = await googleClient.getToken(code)
-      googleClient.setCredentials(tokens)
-
-      // 2. IDトークンからユーザー情報を取得
-      if (!tokens.id_token) {
-        return c.json({ error: 'IDトークンを取得できませんでした' }, 400)
-      }
-
-      const ticket = await googleClient.verifyIdToken({
-        idToken: tokens.id_token,
-        audience: process.env.GOOGLE_CLIENT_ID,
-      })
-      const payload = ticket.getPayload()
-
-      if (!payload || !payload.email || !payload.email_verified) {
-        return c.json({ error: '未検証の Google アカウントです' }, 400)
-      }
-
-      const googleId = payload.sub
-      const email = payload.email!
-      const name = payload.name || 'Google User'
-      // 3. ユーザー検索または新規登録
-      let user = await UserModel.findByGoogleId(googleId)
-      if (!user && email) {
-        user = await UserModel.findByEmail(email)
-      }
-
-      if (!user) {
-        user = await UserModel.createGoogleUser(googleId, name, email, '')
-      }
-
-      if (!isGeneratedProfileAvatar(user.picture)) {
-        const picture = createProfileAvatar(String(user.id))
-        const updatedUser = await UserModel.updatePicture(user.id, picture)
-        if (!updatedUser) {
-          throw new Error('ユーザーのプロフィール画像を保存できませんでした')
-        }
-        user = updatedUser
-      }
-
-      // 4. API連携用トークンを暗号化して DB に格納 (R11)
-      await UserModel.updateGoogleTokens(user.id, {
-        accessToken: encryptToken(tokens.access_token || ''),
-        refreshToken: encryptToken(tokens.refresh_token || ''),
-        expiryDate: tokens.expiry_date || null,
-      })
-
-      const tokenVersion = await UserModel.getTokenVersion(user.id)
-      if (tokenVersion === null) {
-        throw new Error('ユーザーのトークン世代を取得できませんでした')
-      }
-
-      // 5. アプリ内認証用 JWT の発行と Cookie セット
-      const token = await sign(
-        {
-          id: user.id,
-          email: user.email,
-          token_version: tokenVersion,
-          exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24, // 24時間
-        },
-        getJwtSecret()
-      )
+      const { user, token } = await AuthController.processGoogleCode(code)
 
       // 監査ログ: ログイン成功
       await AuditLogModel.createFromContext(c, user.id, 'login', {
