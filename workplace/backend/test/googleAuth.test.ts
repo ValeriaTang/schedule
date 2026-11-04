@@ -91,7 +91,7 @@ test.beforeEach(() => { mockUsers.clear(); nextUserId = 1 })
 test('Google login valid code', async () => {
   const app = createApp()
   const res = await app.request('/auth/google', {
-    method: 'POST', headers: { Origin: 'https://schedule-sai.vercel.app', 'Content-Type': 'application/json' },
+    method: 'POST', headers: { Origin: 'https://schedule-sai-v2.vercel.app', 'Content-Type': 'application/json' },
     body: JSON.stringify({ code: 'valid-code' }),
   })
   assert.equal(res.status, 200)
@@ -105,7 +105,7 @@ test('Google login valid code', async () => {
 test('Google login invalid code', async () => {
   const app = createApp()
   const res = await app.request('/auth/google', {
-    method: 'POST', headers: { Origin: 'https://schedule-sai.vercel.app', 'Content-Type': 'application/json' },
+    method: 'POST', headers: { Origin: 'https://schedule-sai-v2.vercel.app', 'Content-Type': 'application/json' },
     body: JSON.stringify({ code: 'invalid-code' }),
   })
   assert.equal(res.status, 400)
@@ -114,7 +114,7 @@ test('Google login invalid code', async () => {
 test('Google login missing code', async () => {
   const app = createApp()
   const res = await app.request('/auth/google', {
-    method: 'POST', headers: { Origin: 'https://schedule-sai.vercel.app', 'Content-Type': 'application/json' },
+    method: 'POST', headers: { Origin: 'https://schedule-sai-v2.vercel.app', 'Content-Type': 'application/json' },
     body: JSON.stringify({}),
   })
   assert.equal(res.status, 400)
@@ -133,7 +133,7 @@ test('Rate limit: 5 ok then 429', async () => {
   const app = createApp()
   for (let i = 0; i < 6; i++) {
     const res = await app.request('/auth/google', {
-      method: 'POST', headers: { Origin: 'https://schedule-sai.vercel.app', 'Content-Type': 'application/json' },
+      method: 'POST', headers: { Origin: 'https://schedule-sai-v2.vercel.app', 'Content-Type': 'application/json' },
       body: JSON.stringify({ code: 'valid-code' }),
     })
     assert.equal(res.status, i < 5 ? 200 : 429)

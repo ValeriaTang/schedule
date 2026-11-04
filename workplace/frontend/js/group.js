@@ -114,7 +114,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     let response;
     try {
       response = await fetch(
-        `${window.API_BASE_URL || "https://schedule-backend-navy.vercel.app"}${path}`,
+        `${window.API_BASE_URL || "http://localhost:5000"}${path}`,
         {
           ...options,
           signal: controller.signal,
@@ -137,7 +137,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const data = await response.json().catch(() => ({}));
     if (response.status === 401) {
-      window.location.href = "login.html";
+      redirectToLoginIfStillUnauthenticated();
       throw new Error("ログインの有効期限が切れています。再ログインしてください。");
     }
     if (!response.ok) {

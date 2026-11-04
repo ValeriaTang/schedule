@@ -2,7 +2,7 @@ import type { MiddlewareHandler } from 'hono'
 
 import { createOriginGuard, requireJsonContentType } from './requestSecurity'
 
-const productionAllowedOrigins = ['https://schedule-sai.vercel.app']
+const productionAllowedOrigins = ['https://schedule-sai-v2.vercel.app']
 
 export const requireLoginOriginGuard: MiddlewareHandler = async (c, next) => {
   const origin = c.req.header('Origin')

@@ -53,13 +53,13 @@ window.EventCreation = (() => {
   }
 
   async function loadGroups() {
-    const baseUrl = window.API_BASE_URL || "https://schedule-backend-navy.vercel.app";
+    const baseUrl = window.API_BASE_URL || "https://schedule-phi-seven.vercel.app";
     const response = await fetch(`${baseUrl}/api/groups`, {
       credentials: "include",
     });
 
     if (response.status === 401) {
-      window.location.href = "login.html";
+      redirectToLoginIfStillUnauthenticated();
       throw new Error("ログインの有効期限が切れています。再ログインしてください。");
     }
     if (!response.ok) {

@@ -24,7 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const classroomMessage = document.getElementById("classroomMessage");
   const calendarMessage = document.getElementById("googleCalendarMessage");
   const reauthorizeButton = document.getElementById("reauthorizeGoogleButton");
-  const baseUrl = window.API_BASE_URL || "https://schedule-backend-navy.vercel.app";
+  const baseUrl = window.API_BASE_URL || "https://schedule-phi-seven.vercel.app";
 
   async function request(path) {
     const response = await fetch(`${baseUrl}${path}`, {
@@ -32,7 +32,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     const data = await response.json().catch(() => ({}));
     if (response.status === 401) {
-      window.location.href = "login.html";
+      redirectToLoginIfStillUnauthenticated();
       throw new Error("ログインの有効期限が切れています。");
     }
     if (!response.ok) {
@@ -136,7 +136,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
       const data = await response.json().catch(() => ({}));
       if (response.status === 401) {
-        window.location.href = "login.html";
+        redirectToLoginIfStillUnauthenticated();
         throw new Error("ログインの有効期限が切れています。");
       }
       if (!response.ok) {

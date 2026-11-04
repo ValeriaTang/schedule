@@ -36,7 +36,7 @@ async function confirmNoSimilarEvent({ groupId, kind, title, description, startT
   );
 
   if (response.status === 401) {
-    window.location.href = "login.html";
+    redirectToLoginIfStillUnauthenticated();
     return false;
   }
   if (!response.ok) {

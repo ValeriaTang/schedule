@@ -95,7 +95,7 @@ async function updateDashboard() {
     );
 
     if (res.status === 401) {
-      window.location.href = "login.html";
+      redirectToLoginIfStillUnauthenticated();
       return;
     }
 
