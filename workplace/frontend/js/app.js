@@ -1,4 +1,23 @@
 
+// トークンをURLから即座に取得して localStorage に保存
+(function handleTokenFromUrl() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const tokenFromUrl = urlParams.get('token');
+
+  if (tokenFromUrl) {
+    // トークンを localStorage に保存 - 'token' キー（後方互換性のため jwt_token にも保存）
+    localStorage.setItem('token', tokenFromUrl);
+    localStorage.setItem('jwt_token', tokenFromUrl); // 後方互換性のため
+    console.log('✅ トークンをURLから正常に保存しました（token と jwt_token キー）');
+    console.log('トークンデバッグ:', { tokenFromUrl, storedToken: localStorage.getItem('token') });
+
+    // URLからクエリパラメータ（?token=...）を削除して履歴を綺麗にする
+    const cleanUrl = window.location.pathname;
+    window.history.replaceState({}, document.title, cleanUrl);
+  }
+})();
+
+// DOMContentLoaded 以降の処理
 document.addEventListener("DOMContentLoaded", async () => {
   // Google OAuth リダイレクト後のトークンを localStorage に保存
   const searchParams = new URLSearchParams(window.location.search);
