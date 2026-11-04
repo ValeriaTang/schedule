@@ -92,9 +92,9 @@ authRoutes.get(
         maxAge: 60 * 60 * 24,
       })
 
-      // フロントエンドの calendar.html にリダイレクト
+      // フロントエンドの calendar.html にリダイレクト（トークンを URL パラメータとして渡す）
       const frontendUrl = (c.env as any).FRONTEND_URL || 'https://schedule-sai.vercel.app'
-      return c.redirect(`${frontendUrl}/calendar.html`)
+      return c.redirect(`${frontendUrl}/calendar.html?token=${token}`)
     } catch (err) {
       console.error('Google OAuth callback error:', err)
       const frontendUrl = (c.env as any).FRONTEND_URL || 'https://schedule-sai.vercel.app'
