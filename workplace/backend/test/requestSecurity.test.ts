@@ -20,7 +20,6 @@ function createApp() {
 test('production allows only the frontend origin', () => {
   assert.deepEqual(getAllowedOrigins('production'), [
     'https://schedule-sai.vercel.app',
-    'https://schedule-sai-v2.vercel.app',
   ])
 })
 

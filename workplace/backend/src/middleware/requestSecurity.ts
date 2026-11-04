@@ -7,7 +7,6 @@ const frontendUrl = process.env.FRONTEND_URL
 const productionAllowedOrigins = Array.from(
   new Set([
     frontendUrl,
-    'https://schedule-sai-v2.vercel.app',
     'https://schedule-sai.vercel.app',
   ].filter((url): url is string => Boolean(url)))
 )
