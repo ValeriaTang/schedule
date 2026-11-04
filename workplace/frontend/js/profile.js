@@ -64,7 +64,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       const response = await fetch(`${baseUrl}/api/auth/me`, {
         method: "PATCH",
         credentials: "include",
-        headers: { "Content-Type": "application/json" },
+        headers: (typeof buildAuthHeaders === "function" ? buildAuthHeaders : (h) => h)({ "Content-Type": "application/json" }),
         body: JSON.stringify({ name }),
       });
       const data = await response.json().catch(() => ({}));

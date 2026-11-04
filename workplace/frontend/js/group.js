@@ -92,10 +92,10 @@ document.addEventListener("DOMContentLoaded", async () => {
           ...options,
           signal: controller.signal,
           credentials: "include",
-          headers: {
+          headers: (typeof buildAuthHeaders === "function" ? buildAuthHeaders : (h) => h)({
             "Content-Type": "application/json",
             ...options.headers,
-          },
+          }),
         }
       );
     } catch (error) {

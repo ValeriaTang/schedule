@@ -53,8 +53,14 @@ window.EventCreation = (() => {
   }
 
   async function loadGroups() {
+    if (window.DemoMode?.active) {
+      groups = [];
+      populateSelectors();
+      return;
+    }
     const baseUrl = window.API_BASE_URL || "https://schedule-backend-navy.vercel.app";
     const response = await fetch(`${baseUrl}/api/groups`, {
+      headers: buildAuthHeaders(),
       credentials: "include",
     });
 

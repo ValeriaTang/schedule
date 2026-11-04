@@ -105,6 +105,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   try {
     const response = await fetch(`${baseUrl}/api/auth/me`, {
+      headers: buildAuthHeaders(),
       credentials: "include",
     });
     if (response.status === 401) {

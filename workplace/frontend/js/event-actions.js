@@ -210,7 +210,7 @@ window.EventActions = (() => {
       {
         method,
         credentials: "include",
-        headers: body ? { "Content-Type": "application/json" } : undefined,
+        headers: buildAuthHeaders(body ? { "Content-Type": "application/json" } : {}),
         body: body ? JSON.stringify(body) : undefined,
       }
     );
