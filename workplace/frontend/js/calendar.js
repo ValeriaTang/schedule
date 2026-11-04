@@ -1,6 +1,22 @@
 let calendar;
 let calendarUpdateRequest = 0;
 
+// APIベースURL（グローバル変数が未定義の場合はデフォルトを使用）
+const API_BASE_URL = window.API_BASE_URL || "https://schedule-backend-navy.vercel.app";
+
+// JWT トークンを含む認証ヘッダーを構築（Cookie が機能しない場合のフォールバック）
+function buildAuthHeaders(extraHeaders = {}) {
+  const token = localStorage.getItem("jwt_token");
+  const headers = {
+    "Content-Type": "application/json",
+    ...extraHeaders
+  };
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+  return headers;
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   initializeCalendar();
 
@@ -77,6 +93,7 @@ async function getGroupEvents() {
     `${API_BASE_URL}/api/events?groupId=${encodeURIComponent(groupId)}`,
     {
       method: "GET",
+      headers: buildAuthHeaders(),
       credentials: "include"
     }
   );
@@ -242,7 +259,7 @@ async function saveEventDates(info) {
       }
     );
     if (response.status === 401) {
-      window.location.href = "login.html";
+      console.warn("認証期限が切れています。ログインしてください。");
       throw new Error("ログインの有効期限が切れています。");
     }
     if (!response.ok) {

@@ -40,9 +40,8 @@ function initGoogleAuth() {
     redirect_uri: `${API_BASE_URL}/api/auth/google/callback`,
 
     // 👇 コールバックはリダイレクトモードでは使用されません（バックエンド経由で処理）
+    // リダイレクト後のトークンは app.js によって処理され、localStorage に保存されます
     callback: (response) => {
-      // redirect モードではこのコールバックは呼ばれません
-      // 認証完了後はバックエンドからフロントエンドにリダイレクトされます
       console.log('Google OAuth redirect response:', response);
     }
   });
