@@ -1,5 +1,14 @@
 
 document.addEventListener("DOMContentLoaded", async () => {
+  // Google OAuth リダイレクト後のトークンを localStorage に保存
+  const hashParams = new URLSearchParams(window.location.hash.substring(1));
+  const tokenFromHash = hashParams.get("token");
+  if (tokenFromHash) {
+    localStorage.setItem("jwt_token", tokenFromHash);
+    console.log("Token stored in localStorage from redirect");
+    // URL からハッシュを削除
+    window.history.replaceState(null, "", window.location.pathname + window.location.search);
+  }
 
   // カレンダー画面以外では実行しない
   const currentPage =
