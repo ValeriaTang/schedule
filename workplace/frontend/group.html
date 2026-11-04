@@ -80,6 +80,13 @@
               <input id="groupName" name="name" maxlength="50" required placeholder="例：クラスの課題共有">
               <button type="submit" id="createGroupButton">グループ作成</button>
             </form>
+            <div class="form-group">
+              <label for="groupColor">グループカラー</label>
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <input type="color" id="groupColor" name="color" value="#3b82f6" style="width: 50px; height: 38px; cursor: pointer;">
+                <input type="text" id="groupColorText" value="#3b82f6" placeholder="#3b82f6" maxlength="7" style="width: 100px;">
+              </div>
+            </div>
             <form id="joinGroupForm">
               <label for="inviteCode">招待コード</label>
               <input id="inviteCode" name="inviteCode" required autocomplete="off" placeholder="招待コードを入力">

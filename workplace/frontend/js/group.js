@@ -35,6 +35,16 @@ document.addEventListener("DOMContentLoaded", async () => {
   const copyInviteCodeButton = document.getElementById("copyInviteCode");
   const leaveGroupButton = document.getElementById("leaveGroupButton");
 
+  // === カラー関連 & 管理者編集エレメントの取得 ===
+  const groupColorPicker = document.getElementById("groupColor");
+  const groupColorText = document.getElementById("groupColorText");
+  const editGroupForm = document.getElementById("editGroupForm");
+  const editGroupNameInput = document.getElementById("editGroupName");
+  const editGroupColorPicker = document.getElementById("editGroupColor");
+  const editGroupColorText = document.getElementById("editGroupColorText");
+  const editGroupButton = document.getElementById("editGroupButton");
+  const adminEditSection = document.getElementById("adminEditSection");
+
   let groups = [];
   let selectedGroupId = null;
   let selectedEvents = [];
@@ -49,6 +59,23 @@ document.addEventListener("DOMContentLoaded", async () => {
     "死ね", "消えろ", "殺す", "きもい", "うざい", "ばか", "あほ",
     "くそ", "fuck", "shit", "bitch", "idiot",
   ];
+
+  // === 1. カラーピッカーとテキスト入力の相互連動処理 ===
+  function setupColorSync(picker, text) {
+    if (!picker || !text) return;
+    picker.addEventListener("input", (e) => {
+      text.value = e.target.value;
+    });
+    text.addEventListener("input", (e) => {
+      const val = e.target.value.trim();
+      if (/^#[0-9A-Fa-f]{6}$/.test(val)) {
+        picker.value = val;
+      }
+    });
+  }
+
+  setupColorSync(groupColorPicker, groupColorText);
+  setupColorSync(editGroupColorPicker, editGroupColorText);
 
   try {
     currentUser = await requireAuth();
@@ -104,18 +131,24 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   function setGroupMessage(text, isError = false) {
-    groupMessage.textContent = text;
-    groupMessage.classList.toggle("error", isError);
+    if (groupMessage) {
+      groupMessage.textContent = text;
+      groupMessage.classList.toggle("error", isError);
+    }
   }
 
   function setJoinGroupMessage(text, isError = false) {
-    joinGroupMessage.textContent = text;
-    joinGroupMessage.classList.toggle("error", isError);
+    if (joinGroupMessage) {
+      joinGroupMessage.textContent = text;
+      joinGroupMessage.classList.toggle("error", isError);
+    }
   }
 
   function setChatStatus(text, isError = false) {
-    groupChatStatus.textContent = text;
-    groupChatStatus.classList.toggle("error", isError);
+    if (groupChatStatus) {
+      groupChatStatus.textContent = text;
+      groupChatStatus.classList.toggle("error", isError);
+    }
   }
 
   function renderChatMessage(message) {
@@ -205,6 +238,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     groupMembers.replaceChildren();
     groupTasks.replaceChildren();
     groupSchedules.replaceChildren();
+    if (adminEditSection) adminEditSection.hidden = true;
     localStorage.removeItem("selectedGroupId");
     localStorage.removeItem("selectedGroupName");
   }
@@ -221,7 +255,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       const item = document.createElement("li");
       const button = document.createElement("button");
       button.type = "button";
-      button.textContent = group.name;
+      const name = group.group_name || group.name;
+      button.textContent = name;
       button.setAttribute(
         "aria-current",
         String(String(group.id) === String(selectedGroupId))
@@ -283,16 +318,30 @@ document.addEventListener("DOMContentLoaded", async () => {
   function renderOverview(group, members, events) {
     groupEmptyState.hidden = true;
     groupOverview.hidden = false;
-    groupTitle.textContent = group.name || "グループ";
-    groupRole.textContent = `あなたの権限：${group.role === "admin" ? "管理者" : "メンバー"}`;
+    const groupName = group.group_name || group.name || "グループ";
+    groupTitle.textContent = groupName;
+    const isAdmin = group.role === "admin" || group.role === "owner";
+    groupRole.textContent = `あなたの権限：${isAdmin ? "管理者" : "メンバー"}`;
     groupInviteCode.textContent = `招待コード：${group.invite_code || "取得できませんでした"}`;
-    calendarGroupTitle.textContent = `${group.name || "グループ"}のカレンダー`;
+    calendarGroupTitle.textContent = `${groupName}のカレンダー`;
     calendarViewTab.disabled = false;
+
+    // Admin/Owner の場合のみ編集フォームを表示
+    if (adminEditSection) {
+      adminEditSection.hidden = !isAdmin;
+      if (isAdmin && editGroupNameInput && editGroupColorPicker) {
+        editGroupNameInput.value = groupName;
+        const colorVal = group.color || "#3b82f6";
+        editGroupColorPicker.value = colorVal;
+        if (editGroupColorText) editGroupColorText.value = colorVal;
+      }
+    }
 
     groupMembers.replaceChildren();
     members.forEach((member) => {
       const item = document.createElement("li");
-      item.textContent = `${member.name || member.email || "メンバー"}（${member.role === "admin" ? "管理者" : "メンバー"}）`;
+      const memberRoleText = member.role === "admin" || member.role === "owner" ? "管理者" : "メンバー";
+      item.textContent = `${member.name || member.email || "メンバー"}（${memberRoleText}）`;
       groupMembers.appendChild(item);
     });
 
@@ -313,9 +362,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     const group = groups.find((item) => String(item.id) === String(groupId));
     if (!group) return;
 
+    const groupName = group.group_name || group.name || "グループ";
     selectedGroupId = String(group.id);
     localStorage.setItem("selectedGroupId", selectedGroupId);
-    localStorage.setItem("selectedGroupName", group.name || "グループ");
+    localStorage.setItem("selectedGroupName", groupName);
     renderGroupList();
     setGroupMessage("グループ情報を読み込んでいます...");
 
@@ -398,12 +448,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     await calendarScriptPromise;
   }
 
+  // === 2. カレンダー描画（グループカラー自動割り当て） ===
   function renderCalendarEvents() {
     if (!calendar) return;
     calendar.removeAllEvents();
     selectedEvents.forEach((event) => {
-      const isTask = (event.description || "").startsWith("[課題]");
-      const color = isTask ? "#E53935" : "#4285F4";
+      // display_color -> group_color -> デフォルト色
+      const color = event.display_color || event.group_color || ( (event.description || "").startsWith("[課題]") ? "#E53935" : "#4285F4" );
       calendar.addEvent({
         id: String(event.id),
         title: event.title || "名称未設定",
@@ -477,9 +528,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   });
 
+  // === 3. グループ作成（グループカラー指定対応） ===
   createGroupForm.addEventListener("submit", async (event) => {
     event.preventDefault();
     const name = document.getElementById("groupName").value.trim();
+    const color = groupColorPicker ? groupColorPicker.value : "#3b82f6";
+
     if (!name || name.length > 50) {
       setGroupMessage("グループ名は1〜50文字で入力してください。", true);
       return;
@@ -491,12 +545,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     try {
       const data = await apiRequest("/api/groups", {
         method: "POST",
-        body: JSON.stringify({ name }),
+        body: JSON.stringify({ groupName: name, color }),
       });
       if (!data.group?.id) throw new Error("作成したグループ情報を取得できませんでした。");
       await loadGroups(data.group.id);
       setGroupMessage("グループを作成しました。");
       createGroupForm.reset();
+      if (groupColorPicker) groupColorPicker.value = "#3b82f6";
+      if (groupColorText) groupColorText.value = "#3b82f6";
     } catch (error) {
       console.error("グループ作成に失敗しました:", error);
       setGroupMessage(error.message || "グループを作成できませんでした。", true);
@@ -505,6 +561,41 @@ document.addEventListener("DOMContentLoaded", async () => {
       createGroupButton.textContent = "グループ作成";
     }
   });
+
+  // === 4. グループ編集（管理者限定） ===
+  if (editGroupForm) {
+    editGroupForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (!selectedGroupId) return;
+
+      const groupName = editGroupNameInput.value.trim();
+      const color = editGroupColorPicker ? editGroupColorPicker.value : "#3b82f6";
+
+      if (!groupName || groupName.length > 50) {
+        setGroupMessage("グループ名は1〜50文字で入力してください。", true);
+        return;
+      }
+
+      editGroupButton.disabled = true;
+      editGroupButton.textContent = "更新中...";
+      setGroupMessage("グループ情報を更新しています...");
+
+      try {
+        const data = await apiRequest(`/api/groups/${encodeURIComponent(selectedGroupId)}`, {
+          method: "PUT",
+          body: JSON.stringify({ groupName, color }),
+        });
+        setGroupMessage(data.message || "グループ情報を更新しました。");
+        await loadGroups(selectedGroupId);
+      } catch (error) {
+        console.error("グループ情報の更新に失敗しました:", error);
+        setGroupMessage(error.message || "グループ情報を更新できませんでした。", true);
+      } finally {
+        editGroupButton.disabled = false;
+        editGroupButton.textContent = "設定を保存";
+      }
+    });
+  }
 
   joinGroupForm.addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -518,7 +609,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       (group) => String(group.invite_code || "").toUpperCase() === inviteCode
     );
     if (existingGroup) {
-      setJoinGroupMessage(`「${existingGroup.name}」にはすでに参加しています。`);
+      setJoinGroupMessage(`「${existingGroup.group_name || existingGroup.name}」にはすでに参加しています。`);
       return;
     }
 
@@ -614,8 +705,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     const group = groups.find((item) => String(item.id) === selectedGroupId);
     if (!group) return;
 
+    const groupName = group.group_name || group.name;
     const confirmed = window.confirm(
-      `「${group.name}」から脱退しますか？最後のメンバーの場合、グループと共有予定も削除されます。`
+      `「${groupName}」から脱退しますか？最後のメンバーの場合、グループと共有予定も削除されます。`
     );
     if (!confirmed) return;
 
