@@ -1,6 +1,23 @@
 // APIベースURL（未定義ならデフォルトを設定）
 const DEFAULT_API_URL = "https://schedule-backend-navy.vercel.app";
 
+// JWT トークンを localStorage に保存・取得する関数（Cookie が正しく設定されない場合のフォールバック）
+const TokenStorage = {
+  set(token) {
+    if (token) {
+      localStorage.setItem('jwt_token', token)
+      console.log('Token stored in localStorage')
+    }
+  },
+  get() {
+    return localStorage.getItem('jwt_token')
+  },
+  clear() {
+    localStorage.removeItem('jwt_token')
+  }
+}
+
+
 /**
  * 1. バックエンド（Neon）に問い合わせてログイン状態をチェックする関数
  */
@@ -15,18 +32,29 @@ async function checkAuth(baseUrl = window.API_BASE_URL || DEFAULT_API_URL) {
     };
   }
 
+  const token = TokenStorage.get()
+  const headers = {
+    'Content-Type': 'application/json'
+  }
+
+  // JWT トークンを Authorization ヘッダーで送信（Cookie が機能しない場合のフォールバック）
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`
+  }
+
   try {
     const res = await fetch(`${baseUrl}/api/auth/me`, {
       method: "GET",
-      credentials: "include" // Cookie（セッション）を送信するために必須
+      headers,
+      credentials: "include"
     });
 
     if (!res.ok) {
-      return null; // 未ログインまたはセッション切れ
+      return null;
     }
 
     const data = await res.json();
-    return data.user; // バックエンド（Neon）から返されたユーザー情報
+    return data.user;
   } catch (err) {
     console.error("認証チェック通信エラー:", err);
     return null;
@@ -42,7 +70,8 @@ async function requireAuth(baseUrl = window.API_BASE_URL || DEFAULT_API_URL) {
     "index.html", // ※もし index.html も完全公開ならここに入れます（ログイン必須なら外してください）
     "login.html",
     "privacy-policy.html",
-    "terms-of-service.html"
+    "terms-of-service.html",
+    "calendar.html"
   ];
 
   const currentPage = window.location.pathname.split("/").pop() || "index.html";
