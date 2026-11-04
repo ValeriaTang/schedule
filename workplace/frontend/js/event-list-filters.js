@@ -1,3 +1,20 @@
+
+// TokenStorage と buildAuthHeaders（common-auth.js で定義済み）
+// ここではグローバル変数として参照可能
+
+// JWT トークンを含む認証ヘッダーを構築（Cookie が機能しない場合のフォールバック）
+function buildAuthHeaders(extraHeaders = {}) {
+  const token = (typeof TokenStorage !== 'undefined') ? TokenStorage.get() : localStorage.getItem('jwt_token');
+  const headers = {
+    "Content-Type": "application/json",
+    ...extraHeaders
+  };
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+  return headers;
+}
+
 window.EventListFilters = (() => {
   const states = new Map();
   let groups = [];
@@ -16,8 +33,8 @@ window.EventListFilters = (() => {
       return;
     }
     const [groupsResponse, userResponse] = await Promise.all([
-      fetch(`${apiBaseUrl()}/api/groups`, { credentials: "include" }),
-      fetch(`${apiBaseUrl()}/api/auth/me`, { credentials: "include" }),
+      fetch(`${apiBaseUrl()}/api/groups`, { headers: buildAuthHeaders(), credentials: "include" }),
+      fetch(`${apiBaseUrl()}/api/auth/me`, { headers: buildAuthHeaders(), credentials: "include" }),
     ]);
 
     if (groupsResponse.status === 401 || userResponse.status === 401) {
@@ -198,7 +215,7 @@ window.EventListFilters = (() => {
     const results = await Promise.all(selectedGroups.map(async (group) => {
       const response = await fetch(
         `${apiBaseUrl()}/api/events?groupId=${encodeURIComponent(group.id)}`,
-        { credentials: "include" }
+        { headers: buildAuthHeaders(), credentials: "include" }
       );
       if (response.status === 401) {
         window.location.href = "login.html";
