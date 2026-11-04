@@ -42,7 +42,8 @@ async function requireAuth(baseUrl = window.API_BASE_URL || DEFAULT_API_URL) {
     "index.html", // ※もし index.html も完全公開ならここに入れます（ログイン必須なら外してください）
     "login.html",
     "privacy-policy.html",
-    "terms-of-service.html"
+    "terms-of-service.html",
+    "calendar.html"
   ];
 
   const currentPage = window.location.pathname.split("/").pop() || "index.html";
