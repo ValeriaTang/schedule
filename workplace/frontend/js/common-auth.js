@@ -48,6 +48,33 @@ const TokenStorage = {
 
 
 /**
+ * トークンが localStorage に保存されるまで待機する（最大5秒）
+ * 非同期でトークンがセットされる前にAPIが走るのを防ぐためのガード
+ */
+async function waitForToken(timeout = 5000) {
+  const startTime = Date.now();
+  const checkInterval = 50; // 50msごとにチェック
+  
+  return new Promise((resolve) => {
+    const check = () => {
+      const token = TokenStorage.get();
+      if (token && token.trim() !== "") {
+        console.log('✅ トークン確認完了:', token.substring(0, 20) + '...');
+        resolve(token);
+        return;
+      }
+      if (Date.now() - startTime > timeout) {
+        console.warn('⚠️ トークン待機タイムアウト（' + timeout + 'ms）');
+        resolve(null);
+        return;
+      }
+      setTimeout(check, checkInterval);
+    };
+    check();
+  });
+}
+
+/**
  * 1. バックエンド（Neon）に問い合わせてログイン状態をチェックする関数
  */
 async function checkAuth(baseUrl = window.API_BASE_URL || DEFAULT_API_URL) {
@@ -60,6 +87,9 @@ async function checkAuth(baseUrl = window.API_BASE_URL || DEFAULT_API_URL) {
       mode: "demo",
     };
   }
+
+  // トークンが保存されるまで待機（非同期セットのガード）
+  await waitForToken();
 
   const token = TokenStorage.get()
   const headers = {
