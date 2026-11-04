@@ -1,3 +1,20 @@
+
+// TokenStorage と buildAuthHeaders（common-auth.js で定義済み）
+// ここではグローバル変数として参照可能
+
+// JWT トークンを含む認証ヘッダーを構築（Cookie が機能しない場合のフォールバック）
+function buildAuthHeaders(extraHeaders = {}) {
+  const token = (typeof TokenStorage !== 'undefined') ? TokenStorage.get() : localStorage.getItem('jwt_token');
+  const headers = {
+    "Content-Type": "application/json",
+    ...extraHeaders
+  };
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+  return headers;
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
   const menu = document.getElementById("accountMenu");
   if (!menu) return;
@@ -53,6 +70,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             isDelete ? `${baseUrl}/api/auth/me` : `${baseUrl}/api/auth/logout`,
             {
               method: isDelete ? "DELETE" : "POST",
+              headers: buildAuthHeaders(),
               credentials: "include",
             }
           );

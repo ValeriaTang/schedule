@@ -1,4 +1,21 @@
+
+// TokenStorage と buildAuthHeaders（common-auth.js で定義済み）
+// ここではグローバル変数として参照可能
 function normalizeEventText(value) {
+
+// JWT トークンを含む認証ヘッダーを構築（Cookie が機能しない場合のフォールバック）
+function buildAuthHeaders(extraHeaders = {}) {
+  const token = (typeof TokenStorage !== 'undefined') ? TokenStorage.get() : localStorage.getItem('jwt_token');
+  const headers = {
+    "Content-Type": "application/json",
+    ...extraHeaders
+  };
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+  return headers;
+}
+
   return String(value || "")
     .replace(/^\[(?:課題|予定)\]\s*/, "")
     .trim()
@@ -14,7 +31,7 @@ function sameEventTime(left, right) {
 async function confirmNoSimilarEvent({ groupId, kind, title, description, startTime, endTime }) {
   const response = await fetch(
     `${API_BASE_URL}/api/events?groupId=${encodeURIComponent(groupId)}`,
-    { credentials: "include" }
+    { headers: buildAuthHeaders(), credentials: "include" }
   );
 
   if (response.status === 401) {

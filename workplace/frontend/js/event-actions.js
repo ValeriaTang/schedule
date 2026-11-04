@@ -1,3 +1,20 @@
+
+// TokenStorage と buildAuthHeaders（common-auth.js で定義済み）
+// ここではグローバル変数として参照可能
+
+// JWT トークンを含む認証ヘッダーを構築（Cookie が機能しない場合のフォールバック）
+function buildAuthHeaders(extraHeaders = {}) {
+  const token = (typeof TokenStorage !== 'undefined') ? TokenStorage.get() : localStorage.getItem('jwt_token');
+  const headers = {
+    "Content-Type": "application/json",
+    ...extraHeaders
+  };
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+  return headers;
+}
+
 window.EventActions = (() => {
   let currentUserId = null;
   let groupRoles = new Map();
@@ -294,8 +311,8 @@ window.EventActions = (() => {
       groupRoles = new Map();
     } else {
       const [userResponse, groupsResponse] = await Promise.all([
-        fetch(`${baseUrl}/api/auth/me`, { credentials: "include" }),
-        fetch(`${baseUrl}/api/groups`, { credentials: "include" }),
+        fetch(`${baseUrl}/api/auth/me`, { headers: buildAuthHeaders(), credentials: "include" }),
+        fetch(`${baseUrl}/api/groups`, { headers: buildAuthHeaders(), credentials: "include" }),
       ]);
 
       if (!userResponse.ok || !groupsResponse.ok) {

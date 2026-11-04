@@ -1,4 +1,21 @@
+
+// TokenStorage と buildAuthHeaders（common-auth.js で定義済み）
+// ここではグローバル変数として参照可能
 const API_BASE_URL = window.API_BASE_URL;
+
+// JWT トークンを含む認証ヘッダーを構築（Cookie が機能しない場合のフォールバック）
+function buildAuthHeaders(extraHeaders = {}) {
+  const token = (typeof TokenStorage !== 'undefined') ? TokenStorage.get() : localStorage.getItem('jwt_token');
+  const headers = {
+    "Content-Type": "application/json",
+    ...extraHeaders
+  };
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+  return headers;
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
   // ログイン確認
   if (typeof requireAuth === "function") {
