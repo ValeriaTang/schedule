@@ -199,7 +199,7 @@ async function updateCalendar() {
 async function getJapaneseHolidays(start, end) {
   const response = await fetch(
     `${API_BASE_URL}/api/calendar/holidays?start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`,
-    { credentials: "include" }
+    { headers: buildAuthHeaders(), credentials: "include" }
   );
   if (response.status === 401) {
     console.warn("認証期限が切れています。ログインしてください。");
