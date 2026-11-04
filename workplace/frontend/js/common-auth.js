@@ -3,14 +3,22 @@
 (function immediateTokenExtraction() {
   const searchParams = new URLSearchParams(window.location.search);
   const token = searchParams.get('token');
-  if (token) {
+
+  // トークンが存在し、かつ空文字（""）ではない場合のみ保存する
+  if (token && token.trim() !== "") {
     // トークンを jwt_token キーに保存（後方互換性のため token キーにも保存）
     localStorage.setItem('jwt_token', token);
     localStorage.setItem('token', token); // 互換性のため - 他のファイルで token を使用する場合に対応
-    console.log('✅ トークンをURLから正常に保存しました（jwt_token と token キーに）');
+    console.log('✅ 有効なトークンをURLから正常に保存しました（jwt_token と token キーに）');
     console.log('保存されたトークン:', token);
     // URL からクエリパラメータを削除（履歴を綺麗にする）
     const cleanUrl = window.location.pathname + window.location.search.replace(token, '').replace(/\?$/, '');
+    window.history.replaceState(null, document.title, cleanUrl);
+  } else if (window.location.search.includes('token')) {
+    // ⚠️ tokenパラメータはあるのに中身が空の場合
+    console.warn('⚠️ トークンが空の状態でリダイレクトされました');
+    // クエリパラメータをクリーンアップしてリダイレクトループを防止
+    const cleanUrl = window.location.pathname;
     window.history.replaceState(null, document.title, cleanUrl);
   } else {
     console.log('⚠️ URL にトークンパラメータは存在しません');

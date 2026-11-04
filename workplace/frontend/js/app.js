@@ -4,14 +4,21 @@
   const urlParams = new URLSearchParams(window.location.search);
   const tokenFromUrl = urlParams.get('token');
 
-  if (tokenFromUrl) {
+  // トークンが存在し、かつ空文字（""）ではない場合のみ保存する
+  if (tokenFromUrl && tokenFromUrl.trim() !== "") {
     // トークンを localStorage に保存 - 'token' キー（後方互換性のため jwt_token にも保存）
     localStorage.setItem('token', tokenFromUrl);
     localStorage.setItem('jwt_token', tokenFromUrl); // 後方互換性のため
-    console.log('✅ トークンをURLから正常に保存しました（token と jwt_token キー）');
+    console.log('✅ 有効なトークンをURLから正常に保存しました（token と jwt_token キー）');
     console.log('トークンデバッグ:', { tokenFromUrl, storedToken: localStorage.getItem('token') });
 
     // URLからクエリパラメータ（?token=...）を削除して履歴を綺麗にする
+    const cleanUrl = window.location.pathname;
+    window.history.replaceState({}, document.title, cleanUrl);
+  } else if (window.location.search.includes('token')) {
+    // ⚠️ tokenパラメータはあるのに中身が空の場合
+    console.warn('⚠️ トークンが空の状態でリダイレクトされました');
+    // クエリパラメータをクリーンアップしてリダイレクトループを防止
     const cleanUrl = window.location.pathname;
     window.history.replaceState({}, document.title, cleanUrl);
   }
