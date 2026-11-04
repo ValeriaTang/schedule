@@ -98,6 +98,10 @@ export const groupInviteCodeRateLimit = createRequestRateLimiter(
   30,
   15 * 60 * 1000
 )
+
+// ログイン専用レート制限（R04：5req/1分以内で429）
+export const loginRateLimit = createRequestRateLimiter('login', 5, 60 * 1000)
+
 export const apiWriteRateLimit = createRequestRateLimiter(
   'api-write',
   100,

@@ -10,6 +10,80 @@ document.addEventListener("DOMContentLoaded", async () => {
   const avatarImage = document.getElementById("accountAvatarImage");
   const baseUrl = window.API_BASE_URL || "https://schedule-backend-navy.vercel.app";
 
+  function closeMenu() {
+    panel.hidden = true;
+    trigger.setAttribute("aria-expanded", "false");
+  }
+
+  function accountMenuInit() {
+    closeMenu();
+
+    trigger.addEventListener("click", () => {
+      const isOpen = trigger.getAttribute("aria-expanded") === "true";
+      trigger.setAttribute("aria-expanded", String(!isOpen));
+      panel.hidden = isOpen;
+    });
+
+    document.addEventListener("click", (event) => {
+      if (!menu.contains(event.target)) closeMenu();
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        closeMenu();
+        trigger.focus();
+      }
+    });
+
+    document.querySelectorAll("[data-account-action]").forEach((button) => {
+      button.addEventListener("click", async () => {
+        const action = button.dataset.accountAction;
+        const isDelete = action === "delete";
+        const isSwitch = action === "switch";
+        const prompt = isDelete
+          ? "会員登録を解除しますか？アカウント情報とあなたが作成した予定は削除され、元に戻せません。グループは残り、管理者権限は他のメンバーに引き継がれます。"
+          : isSwitch
+            ? "ログアウトして、別のGoogleアカウントでログインしますか？"
+            : "ログアウトしますか？";
+        if (!window.confirm(prompt)) return;
+
+        button.disabled = true;
+        try {
+          const response = await fetch(
+            isDelete ? `${baseUrl}/api/auth/me` : `${baseUrl}/api/auth/logout`,
+            {
+              method: isDelete ? "DELETE" : "POST",
+              credentials: "include",
+            }
+          );
+          const data = await response.json().catch(() => ({}));
+          if (!response.ok) {
+            throw new Error(data.error || (isDelete
+              ? "会員登録を解除できませんでした。"
+              : "ログアウトできませんでした。"));
+          }
+          const nextPage = isSwitch ? "login.html?select_account=true" : "login.html";
+          window.location.href = nextPage;
+        } catch (error) {
+          console.error("アカウント操作に失敗しました:", error);
+          window.alert(error.message || "アカウント操作に失敗しました。");
+          button.disabled = false;
+        }
+      });
+    });
+  }
+
+  // デモモード中はダミーユーザー情報を使用（バックエンド認証チェック不要）
+  if (window.DemoMode?.active) {
+    const data = { user: { id: 0, email: "demo@demo.local", name: "デモユーザー", mode: "demo" } };
+    nameElement.textContent = data.user.name || "アカウント";
+    emailElement.textContent = data.user.email || "";
+    avatarInitial.textContent = (data.user.name || data.user.email || "?").trim().charAt(0).toUpperCase() || "?";
+    trigger.setAttribute("aria-label", `${nameElement.textContent}のアカウントメニュー`);
+    accountMenuInit();
+    return;
+  }
+
   try {
     const response = await fetch(`${baseUrl}/api/auth/me`, {
       credentials: "include",
@@ -41,62 +115,5 @@ document.addEventListener("DOMContentLoaded", async () => {
     nameElement.textContent = "アカウント情報を取得できませんでした";
   }
 
-  function closeMenu() {
-    panel.hidden = true;
-    trigger.setAttribute("aria-expanded", "false");
-  }
-
-  trigger.addEventListener("click", () => {
-    const isOpen = trigger.getAttribute("aria-expanded") === "true";
-    trigger.setAttribute("aria-expanded", String(!isOpen));
-    panel.hidden = isOpen;
-  });
-
-  document.addEventListener("click", (event) => {
-    if (!menu.contains(event.target)) closeMenu();
-  });
-
-  document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape") {
-      closeMenu();
-      trigger.focus();
-    }
-  });
-
-  document.querySelectorAll("[data-account-action]").forEach((button) => {
-    button.addEventListener("click", async () => {
-      const action = button.dataset.accountAction;
-      const isDelete = action === "delete";
-      const isSwitch = action === "switch";
-      const prompt = isDelete
-        ? "会員登録を解除しますか？アカウント情報とあなたが作成した予定は削除され、元に戻せません。グループは残り、管理者権限は他のメンバーに引き継がれます。"
-        : isSwitch
-          ? "ログアウトして、別のGoogleアカウントでログインしますか？"
-          : "ログアウトしますか？";
-      if (!window.confirm(prompt)) return;
-
-      button.disabled = true;
-      try {
-        const response = await fetch(
-          isDelete ? `${baseUrl}/api/auth/me` : `${baseUrl}/api/auth/logout`,
-          {
-            method: isDelete ? "DELETE" : "POST",
-            credentials: "include",
-          }
-        );
-        const data = await response.json().catch(() => ({}));
-        if (!response.ok) {
-          throw new Error(data.error || (isDelete
-            ? "会員登録を解除できませんでした。"
-            : "ログアウトできませんでした。"));
-        }
-        const nextPage = isSwitch ? "login.html?select_account=true" : "login.html";
-        window.location.href = nextPage;
-      } catch (error) {
-        console.error("アカウント操作に失敗しました:", error);
-        window.alert(error.message || "アカウント操作に失敗しました。");
-        button.disabled = false;
-      }
-    });
-  });
+  accountMenuInit();
 });

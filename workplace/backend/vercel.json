@@ -1,9 +1,22 @@
 {
   "version": 2,
-  "rewrites": [
+  "builds": [
     {
-      "source": "/(.*)",
-      "destination": "/api"
+      "src": "index.ts",
+      "use": "@vercel/node",
+      "config": {
+        "runtime": "nodejs"
+      }
     }
-  ]
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/index.ts"
+    }
+  ],
+  "env": {
+    "FRONTEND_URL": "https://schedule-sai.vercel.app",
+    "BACKEND_URL": "https://schedule-backend-navy.vercel.app"
+  }
 }

@@ -37,3 +37,31 @@ export function createProfileAvatar(seed: string): string {
 export function isGeneratedProfileAvatar(picture?: string): boolean {
   return picture?.startsWith('data:image/svg+xml;charset=UTF-8,') ?? false
 }
+
+// Simple token encryption helper (R11: Google トークン平文防止)
+export function encryptToken(token: string): string {
+  if (!token) return ''
+  const crypto = require('crypto')
+  const key = crypto.createHash('sha256').update(process.env.TOKEN_ENCRYPTION_KEY || 'default-key').digest()
+  const iv = crypto.randomBytes(12)
+  const cipher = crypto.createCipheriv('aes-256-gcm', key, iv)
+  const encrypted = Buffer.concat([cipher.update(token, 'utf8'), cipher.final()])
+  const tag = cipher.getAuthTag()
+  return iv.toString('base64') + ':' + encrypted.toString('base64') + ':' + tag.toString('base64')
+}
+
+export function decryptToken(encrypted: string): string {
+  if (!encrypted) return ''
+  const parts = encrypted.split(':')
+  if (parts.length !== 3) return ''
+  const crypto = require('crypto')
+  const key = crypto.createHash('sha256').update(process.env.TOKEN_ENCRYPTION_KEY || 'default-key').digest()
+  const [ivB64, encB64, tagB64] = parts
+  const iv = Buffer.from(ivB64, 'base64')
+  const encryptedBuf = Buffer.from(encB64, 'base64')
+  const tag = Buffer.from(tagB64, 'base64')
+  const decipher = crypto.createDecipheriv('aes-256-gcm', key, iv)
+  decipher.setAuthTag(tag)
+  const decrypted = Buffer.concat([decipher.update(encryptedBuf, 'base64'), decipher.final('utf8')])
+  return decrypted.toString('utf8')
+}

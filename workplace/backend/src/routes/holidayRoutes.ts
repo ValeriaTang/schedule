@@ -1,6 +1,7 @@
 import { Hono } from 'hono'
 import { Env } from '../types/hono'
 import { authCheck } from '../middleware/authMiddleware'
+import { apiWriteRateLimit } from '../middleware/rateLimit'
 
 const holidayRoutes = new Hono<Env>()
 const HOLIDAY_CSV_URL = 'https://www8.cao.go.jp/chosei/shukujitsu/syukujitsu.csv'
@@ -16,7 +17,7 @@ let holidaysRequest: Promise<Holiday[]> | null = null
 
 holidayRoutes.use('*', authCheck)
 
-holidayRoutes.get('/', async (c) => {
+holidayRoutes.get('/', apiWriteRateLimit, async (c) => {
   const start = c.req.query('start')
   const end = c.req.query('end')
   if (!isDate(start) || !isDate(end) || start >= end) {

@@ -264,6 +264,18 @@
     const method = (init.method || (input instanceof Request ? input.method : "GET")).toUpperCase();
     const pathname = requestUrl.pathname;
 
+    // /api/auth/me をデモモードで処理
+    if (pathname === "/api/auth/me" && method === "GET") {
+      return jsonResponse({
+        user: {
+          id: user?.id || 0,
+          email: user?.email || "demo@demo.local",
+          name: user?.name || "デモユーザー",
+          mode: "demo",
+        }
+      });
+    }
+
     if (pathname === "/api/events" && method === "POST") {
       try {
         const event = addMemoryEvent(await requestBody(input, init));
@@ -534,10 +546,31 @@
     else sessionStorage.removeItem(stateKey);
   });
 
-  document.addEventListener("DOMContentLoaded", () => {
+  document.addEventListener("DOMContentLoaded", async () => {
     document.body.classList.add("demo-mode");
     const badge = document.getElementById("demoModeBadge");
     if (badge) badge.hidden = false;
+
+    // デモモード中のユーザー名をバッジに表示
+    const personaNameEl = document.getElementById("demoPersonaName");
+    if (personaNameEl) {
+      try {
+        const meResponse = await nativeFetch(`${baseUrl}/api/demo/me`, {
+          method: "GET",
+          credentials: "include",
+          headers: makeHeaders(null, {}),
+        });
+        if (meResponse.ok) {
+          const meData = await meResponse.json();
+          if (meData.user?.name) {
+            personaNameEl.textContent = `（${meData.user.name}）`;
+          }
+        }
+      } catch (error) {
+        console.error("デモユーザー情報の取得に失敗しました:", error);
+      }
+    }
+
     document.getElementById("demoModeExitButton")?.addEventListener("click", async () => {
       const button = document.getElementById("demoModeExitButton");
       if (button) button.disabled = true;
@@ -558,10 +591,10 @@
             ? error.message
             : "デモを終了できませんでした。通信環境を確認してください。";
         }
+      } finally {
         if (button) button.disabled = false;
-        return;
+        restoreGroupSelection();
       }
-      restoreGroupSelection();
     });
   });
 })();

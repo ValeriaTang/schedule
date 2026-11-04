@@ -82,7 +82,7 @@ async function getGroupEvents() {
   );
 
   if (res.status === 401) {
-    window.location.href = "login.html";
+    console.warn("認証期限が切れています。ログインしてください。");
     return [];
   }
 
@@ -185,7 +185,7 @@ async function getJapaneseHolidays(start, end) {
     { credentials: "include" }
   );
   if (response.status === 401) {
-    window.location.href = "login.html";
+    console.warn("認証期限が切れています。ログインしてください。");
     throw new Error("ログインの有効期限が切れています。");
   }
   if (!response.ok) {

@@ -1,10 +1,15 @@
-import 'dotenv/config'
 import { Hono } from 'hono'
+
+// dotenv はローカル開発時のみ読み込み（Vercel では環境変数が直接提供される）
+if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  require('dotenv/config')
+}
 import { serve } from '@hono/node-server'
 import { secureHeaders } from 'hono/secure-headers'
 import { cors } from 'hono/cors'
 import { Env } from './src/types/hono'
-import { createOriginGuard, getAllowedOrigins } from './src/middleware/requestSecurity'
+import { createOriginGuard, getAllowedOrigins, requireJsonContentType } from './src/middleware/requestSecurity'
 import { apiWriteRateLimit } from './src/middleware/rateLimit'
 import { bodySizeLimit } from './src/middleware/bodyLimit'
 import { getJwtSecret } from './src/controllers/authController';
@@ -32,7 +37,6 @@ const allowedOrigins = getAllowedOrigins()
 
 app.use(
   '/api/*',
-  createOriginGuard(allowedOrigins),
   cors({
     origin: (origin) => {
       if (origin && allowedOrigins.includes(origin)) {
@@ -41,11 +45,17 @@ app.use(
       return null
     },
     credentials: true,
-    allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowMethods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
     allowHeaders: ['Content-Type', 'Authorization'],
+    // f8: CORS プレフライト最大有効時間（ブラウザキャッシュ最適化）
+    maxAge: 86400,
+    // f9: 認証情報付きリクエストで露出するヘッダー
+    exposeHeaders: ['Authorization'],
   }),
+  createOriginGuard(allowedOrigins),
   apiWriteRateLimit,
-  bodySizeLimit()
+  bodySizeLimit(),
+  requireJsonContentType
 )
 
 // 3. エラーハンドラ
@@ -55,7 +65,9 @@ app.onError((err, c) => {
   const errorId = Math.random().toString(36).slice(-8)
   console.error(`${ERROR_LOG_PREFIX} [errorId=${errorId}]:`, err)
 
-  const isProduction = process.env.NODE_ENV === 'production'
+  // Vercel 環境でも NODE_ENV が設定されない場合があるため VERCEL 変数もチェック
+  const isProduction =
+    process.env.NODE_ENV === 'production' || process.env.VERCEL === '1'
 
   if (isProduction) {
     return c.json(

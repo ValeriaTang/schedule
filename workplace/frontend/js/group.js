@@ -272,7 +272,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (events.length === 0) {
       const empty = document.createElement("p");
       empty.className = "muted";
-      empty.textContent = isTask ? "共有中のタスクはありません。" : "共有中の予定はありません。";
+      empty.textContent = isTask ? "共有中の課題はありません。" : "共有中の予定はありません。";
       container.appendChild(empty);
       return;
     }
@@ -427,14 +427,25 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (!calendarScriptPromise) {
       calendarMessage.textContent = "カレンダーを読み込んでいます...";
       const scripts = [
-        "all/global.js",
-        "themes/monarch/global.js",
-        "locales/ja/global.js",
+        {
+          path: "all/global.js",
+          integrity: "sha384-mVUtG2TvolUSuFldYiRcYWx4EHK1XgqlFIyLMUf5alrN7/tdAzdvIbTnYQofzRSi"
+        },
+        {
+          path: "themes/monarch/global.js",
+          integrity: "sha384-eTZ1xQ830zvJLg5lC7bt4us60RagYcwVxE+8kcMNKWHv4wZZoBQ+rPpaQhACxYS1"
+        },
+        {
+          path: "locales/ja/global.js",
+          integrity: "sha384-mlBKD6Y1rhEpQrhyI2CYYFmIFsCxdGUL0lkz4oC92JshGhg7fhLckwAmegHErdA+"
+        },
       ];
       calendarScriptPromise = scripts.reduce(
-        (previous, path) => previous.then(() => new Promise((resolve, reject) => {
+        (previous, { path, integrity }) => previous.then(() => new Promise((resolve, reject) => {
           const script = document.createElement("script");
           script.src = `https://cdn.jsdelivr.net/npm/fullcalendar@7.1.2/${path}`;
+          script.integrity = integrity;
+          script.crossOrigin = "anonymous";
           script.onload = resolve;
           script.onerror = () => reject(new Error("カレンダーを読み込めませんでした。通信環境を確認してください。"));
           document.head.appendChild(script);
@@ -700,6 +711,34 @@ document.addEventListener("DOMContentLoaded", async () => {
       setGroupMessage(`招待コード：${code}（手動でコピーしてください）`);
     }
   });
+
+  // 招待コード再発行ボタンのイベントリスナー
+  const rotateInviteCodeBtn = document.getElementById("rotateInviteCode");
+  if (rotateInviteCodeBtn) {
+    rotateInviteCodeBtn.addEventListener("click", async () => {
+      const group = groups.find((item) => String(item.id) === selectedGroupId);
+      if (!group) return;
+
+      if (!confirm("招待コードを再発行しますか？新しいコードに置き換えられ、古いコードは無効になります。")) return;
+
+      rotateInviteCodeBtn.disabled = true;
+      rotateInviteCodeBtn.textContent = "再発行中...";
+      try {
+        const data = await apiRequest(`/api/groups/${group.id}/invite-code/rotate`, {
+          method: "POST",
+        });
+        setGroupMessage("招待コードを再発行しました。");
+        // グループ情報を再取得して表示を更新
+        selectGroup(group.id);
+      } catch (error) {
+        console.error("招待コード再発行エラー:", error);
+        setGroupMessage(error.message || "招待コードの再発行に失敗しました。", true);
+      } finally {
+        rotateInviteCodeBtn.disabled = false;
+        rotateInviteCodeBtn.textContent = "招待コード再発行";
+      }
+    });
+  }
 
   leaveGroupButton.addEventListener("click", async () => {
     const group = groups.find((item) => String(item.id) === selectedGroupId);
