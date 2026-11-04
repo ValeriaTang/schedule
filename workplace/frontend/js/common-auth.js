@@ -4,11 +4,16 @@
   const searchParams = new URLSearchParams(window.location.search);
   const token = searchParams.get('token');
   if (token) {
+    // トークンを jwt_token キーに保存（後方互換性のため token キーにも保存）
     localStorage.setItem('jwt_token', token);
-    console.log('Token stored in localStorage (immediate)');
+    localStorage.setItem('token', token); // 互換性のため - 他のファイルで token を使用する場合に対応
+    console.log('✅ トークンをURLから正常に保存しました（jwt_token と token キーに）');
+    console.log('保存されたトークン:', token);
     // URL からクエリパラメータを削除（履歴を綺麗にする）
     const cleanUrl = window.location.pathname + window.location.search.replace(token, '').replace(/\?$/, '');
     window.history.replaceState(null, document.title, cleanUrl);
+  } else {
+    console.log('⚠️ URL にトークンパラメータは存在しません');
   }
 })();
 
@@ -19,15 +24,17 @@ const DEFAULT_API_URL = "https://schedule-backend-navy.vercel.app";
 const TokenStorage = {
   set(token) {
     if (token) {
-      localStorage.setItem('jwt_token', token)
-      console.log('Token stored in localStorage')
+      localStorage.setItem('token', token); // 主なキー名
+      localStorage.setItem('jwt_token', token); // 後方互換性のため
+      console.log('✅ トークンを正常に保存しました（token キー）');
     }
   },
   get() {
-    return localStorage.getItem('jwt_token')
+    return localStorage.getItem('token') || localStorage.getItem('jwt_token'); // 'token' を優先
   },
   clear() {
-    localStorage.removeItem('jwt_token')
+    localStorage.removeItem('token');
+    localStorage.removeItem('jwt_token');
   }
 }
 

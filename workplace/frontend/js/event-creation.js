@@ -4,7 +4,8 @@
 
 // JWT トークンを含む認証ヘッダーを構築（Cookie が機能しない場合のフォールバック）
 function buildAuthHeaders(extraHeaders = {}) {
-  const token = (typeof TokenStorage !== 'undefined') ? TokenStorage.get() : localStorage.getItem('jwt_token');
+  // 'token' キーを優先し、後方互換性のため 'jwt_token' も確認
+  const token = (typeof TokenStorage !== 'undefined') ? TokenStorage.get() : (localStorage.getItem('token') || localStorage.getItem('jwt_token'));
   const headers = {
     "Content-Type": "application/json",
     ...extraHeaders
