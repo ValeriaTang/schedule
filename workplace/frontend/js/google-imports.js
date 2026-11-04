@@ -24,7 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const classroomMessage = document.getElementById("classroomMessage");
   const calendarMessage = document.getElementById("googleCalendarMessage");
   const reauthorizeButton = document.getElementById("reauthorizeGoogleButton");
-  const baseUrl = window.API_BASE_URL || "https://schedule-phi-seven.vercel.app";
+  const baseUrl = window.API_BASE_URL || "https://schedule-backend-navy.vercel.app";
 
   async function request(path) {
     const response = await fetch(`${baseUrl}${path}`, {
