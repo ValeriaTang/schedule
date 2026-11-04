@@ -16,7 +16,7 @@
     }
   ],
   "env": {
-    "FRONTEND_URL": "https://schedule-sai.vercel.app",
-    "BACKEND_URL": "https://schedule-backend-navy.vercel.app"
+    "FRONTEND_URL": "https://schedule-sai-v2.vercel.app",
+    "BACKEND_URL": "https://schedule-phi-seven.vercel.app"
   }
 }
