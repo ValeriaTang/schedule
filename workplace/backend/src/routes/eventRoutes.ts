@@ -9,7 +9,7 @@ import { requireJsonContentType } from '../middleware/requestSecurity'
 const eventRoutes = new Hono<Env>()
 
 // GET  /api/events/
-eventRoutes.get('/', authCheck, rejectDemoReadSensitive, EventController.getByGroup)
+eventRoutes.get('/', authCheck, EventController.getByGroup)
 
 // POST /api/events/
 eventRoutes.post('/', requireJsonContentType, authCheck, rejectDemoWrite, async (c) => {

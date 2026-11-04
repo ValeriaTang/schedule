@@ -23,7 +23,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const nicknameForm = document.getElementById("nicknameForm");
   const saveButton = document.getElementById("saveNickname");
   const message = document.getElementById("profileMessage");
-  const baseUrl = window.API_BASE_URL || "https://schedule-backend-navy.vercel.app";
+  const baseUrl = window.API_BASE_URL || "https://schedule-phi-seven.vercel.app";
   let user;
 
   function setMessage(text, isError = false) {
@@ -70,7 +70,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       const data = await response.json().catch(() => ({}));
 
       if (response.status === 401) {
-        window.location.href = "login.html";
+        redirectToLoginIfStillUnauthenticated();
         return;
       }
       if (!response.ok) {

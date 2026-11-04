@@ -1,5 +1,5 @@
 // APIベースURL（最新のプロダクションデプロイ）
-const API_BASE_URL = "https://schedule-backend-navy.vercel.app";
+const API_BASE_URL = "https://schedule-phi-seven.vercel.app";
 // バックエンドのCORS設定に合わせた認証エンドポイント base
 // fetch POSTでの認証回避のため、リダイレクト認証フローを使用します
 

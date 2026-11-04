@@ -23,7 +23,7 @@ window.EventListFilters = (() => {
   let initialization;
 
   function apiBaseUrl() {
-    return window.API_BASE_URL || "https://schedule-backend-navy.vercel.app";
+    return window.API_BASE_URL || "https://schedule-phi-seven.vercel.app";
   }
 
   async function loadMetadata() {
@@ -39,7 +39,7 @@ window.EventListFilters = (() => {
     ]);
 
     if (groupsResponse.status === 401 || userResponse.status === 401) {
-      window.location.href = "login.html";
+      redirectToLoginIfStillUnauthenticated();
       throw new Error("ログインの有効期限が切れています。再ログインしてください。");
     }
     if (!groupsResponse.ok || !userResponse.ok) {
@@ -219,7 +219,7 @@ window.EventListFilters = (() => {
         { headers: buildAuthHeaders(), credentials: "include" }
       );
       if (response.status === 401) {
-        window.location.href = "login.html";
+        redirectToLoginIfStillUnauthenticated();
         throw new Error("ログインの有効期限が切れています。再ログインしてください。");
       }
       if (!response.ok) {

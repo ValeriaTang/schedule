@@ -147,7 +147,7 @@ async function addTask(title, deadline, description) {
     });
 
     if (res.status === 401) {
-      window.location.href = 'login.html';
+      redirectToLoginIfStillUnauthenticated();
       return false;
     }
 

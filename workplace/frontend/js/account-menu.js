@@ -26,7 +26,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const emailElement = document.getElementById("accountMenuEmail");
   const avatarInitial = document.getElementById("accountAvatarInitial");
   const avatarImage = document.getElementById("accountAvatarImage");
-  const baseUrl = window.API_BASE_URL || "https://schedule-backend-navy.vercel.app";
+  const baseUrl = window.API_BASE_URL || "https://schedule-phi-seven.vercel.app";
 
   function closeMenu() {
     panel.hidden = true;
@@ -108,7 +108,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       credentials: "include",
     });
     if (response.status === 401) {
-      window.location.href = "login.html";
+      redirectToLoginIfStillUnauthenticated();
       return;
     }
     if (!response.ok) throw new Error("アカウント情報を取得できませんでした。");

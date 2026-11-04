@@ -26,7 +26,7 @@
 })();
 
 // ===== APIベースURL（未定義ならデフォルトを設定） =====
-const DEFAULT_API_URL = "https://schedule-backend-navy.vercel.app";
+const DEFAULT_API_URL = "https://schedule-phi-seven.vercel.app";
 
 // ===== JWT トークンを localStorage に保存・取得する関数（Cookie が正しく設定されない場合のフォールバック） =====
 const TokenStorage = {
@@ -149,9 +149,9 @@ async function requireAuth(baseUrl = window.API_BASE_URL || DEFAULT_API_URL) {
       return null;
     }
 
-    // 未ログインかつログインページでなければリダイレクト
+    // 未ログインかつログインページでなければリダイレクト（500ms待機）
     if (!window.location.pathname.endsWith('login.html')) {
-      window.location.href = 'login.html';
+      redirectToLoginIfStillUnauthenticated();
     }
     return null;
   }
@@ -160,11 +160,43 @@ async function requireAuth(baseUrl = window.API_BASE_URL || DEFAULT_API_URL) {
 }
 
 /**
+ * リダイレクト前にトークン復旧を待機（500ms間隔チェック）
+ * 非同期でトークンがセットされる前にリダイレクトするのを防ぐ
+ */
+let redirectTimer = null;
+
+function redirectToLoginIfStillUnauthenticated(delayMs = 500) {
+  // 既存のタイマーをクリア（重複リダイレクト防止）
+  if (redirectTimer) {
+    clearTimeout(redirectTimer);
+  }
+
+  redirectTimer = setTimeout(async () => {
+    // 再度トークンをチェック（復旧した可能性があるため）
+    const token = TokenStorage.get();
+    if (token && token.trim() !== "") {
+      console.log('✅ トークンが復旧しました。リダイレクトをキャンセルします。');
+      return;
+    }
+
+    // デモモードもチェック
+    if (window.DemoMode?.active) {
+      return;
+    }
+
+    // リダイレクト実行
+    if (!window.location.pathname.endsWith('login.html')) {
+      window.location.href = 'login.html';
+    }
+  }, delayMs);
+}
+
+/**
  * 3. ログイン画面（login.html）用：すでにログイン済みなら index.html へ飛ばす
  */
 async function redirectIfAuthenticated(baseUrl = window.API_BASE_URL || DEFAULT_API_URL) {
   const user = await checkAuth(baseUrl);
   if (user) {
-    window.location.href = 'https://schedule-sai.vercel.app/calendar.html';
+    window.location.href = 'https://schedule-sai-v2.vercel.app/calendar.html';
   }
 }

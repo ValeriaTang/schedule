@@ -23,7 +23,7 @@ function buildAuthHeaders(extraHeaders = {}) {
 
   const baseUrl =
     window.API_BASE_URL ||
-    "https://schedule-backend-navy.vercel.app";
+    "http://localhost:5000";
 
   const tokenKey = "demoSessionToken";
 

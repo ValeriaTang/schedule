@@ -204,7 +204,7 @@ window.EventActions = (() => {
   }
 
   async function sendEventRequest(event, method, body) {
-    const baseUrl = window.API_BASE_URL || "https://schedule-backend-navy.vercel.app";
+    const baseUrl = window.API_BASE_URL || "https://schedule-phi-seven.vercel.app";
     const response = await fetch(
       `${baseUrl}/api/events/${encodeURIComponent(event.id)}`,
       {
@@ -216,7 +216,7 @@ window.EventActions = (() => {
     );
     const data = await response.json().catch(() => ({}));
     if (response.status === 401) {
-      window.location.href = "login.html";
+      redirectToLoginIfStillUnauthenticated();
       throw new Error("ログインの有効期限が切れています。再ログインしてください。");
     }
     if (!response.ok) {
@@ -305,7 +305,7 @@ window.EventActions = (() => {
   });
 
   const ready = (async () => {
-    const baseUrl = window.API_BASE_URL || "https://schedule-backend-navy.vercel.app";
+    const baseUrl = window.API_BASE_URL || "https://schedule-phi-seven.vercel.app";
     // デモモード中はダミーユーザー情報を使用（バックエンド認証チェック不要）
     if (window.DemoMode?.active) {
       currentUserId = 0;
