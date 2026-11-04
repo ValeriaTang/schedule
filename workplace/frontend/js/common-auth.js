@@ -1,7 +1,21 @@
-// APIベースURL（未定義ならデフォルトを設定）
+// ===== 重要: ページ読み込み時に URL の ?token= を即座に localStorage に保存 =====
+// Google OAuth リダイレクト後のトークンを、他の認証チェックより先に保存する
+(function immediateTokenExtraction() {
+  const searchParams = new URLSearchParams(window.location.search);
+  const token = searchParams.get('token');
+  if (token) {
+    localStorage.setItem('jwt_token', token);
+    console.log('Token stored in localStorage (immediate)');
+    // URL からクエリパラメータを削除（履歴を綺麗にする）
+    const cleanUrl = window.location.pathname + window.location.search.replace(token, '').replace(/\?$/, '');
+    window.history.replaceState(null, document.title, cleanUrl);
+  }
+})();
+
+// ===== APIベースURL（未定義ならデフォルトを設定） =====
 const DEFAULT_API_URL = "https://schedule-backend-navy.vercel.app";
 
-// JWT トークンを localStorage に保存・取得する関数（Cookie が正しく設定されない場合のフォールバック）
+// ===== JWT トークンを localStorage に保存・取得する関数（Cookie が正しく設定されない場合のフォールバック） =====
 const TokenStorage = {
   set(token) {
     if (token) {
