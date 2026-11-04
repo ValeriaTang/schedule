@@ -250,7 +250,8 @@ async function saveEventDates(info) {
       `${API_BASE_URL}/api/events/${encodeURIComponent(event.id)}`,
       {
         method: "PUT",
-        credentials: "include",
+        headers: buildAuthHeaders(),
+      credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           start_time: event.start.toISOString(),
